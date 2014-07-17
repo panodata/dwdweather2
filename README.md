@@ -3,6 +3,11 @@ dwd-weather
 
 Python client to access DWD weather data (Germany)
 
+### Install
+
+    pip install dwdweather
+
+
 ### Quick reference
 
 ```python
