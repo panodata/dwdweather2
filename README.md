@@ -3,7 +3,7 @@ dwd-weather
 
 Python client to access DWD weather data (Germany)
 
-Quick reference:
+### Quick reference
 
 ```python
 from dwdweather import DwdWeather
@@ -59,18 +59,17 @@ print result
 * `wind_structure_version`: version number, as int.
 
 
-
-Some notes:
+### Some notes
 
 * Personal FTP user account with DWD GDS is needed. See [here](http://www.dwd.de/bvbw/appmanager/bvbw/dwdwwwDesktop?_nfpb=true&_pageLabel=_dwdwww_spezielle_nutzer_metdienstleister_datenbezug&T26001030691160718267804gsbDocumentPath=Navigation%2FOeffentlichkeit%2FDatenservice%2FDatenanforderungen%2FDatenbezug%2FGlobalerDatensatz%2Fanmeldung__node.html%3F__nnn%3Dtrue) for details.
 * Data is cached in a local sqlite3 database for fast queries.
 * The Stations cache is filled upon first request to `DwdWeather.stations()` or `DwdWeather.nearest_station()`
 * The Stations cache will not be refreshed automatically. Use `DwdWeather.import_stations()` to do this.
-* The Measures cache is filled upon first access to measures using `DwdWeather.query()` and updated whenever a query cannot be fullfilled form the cache.
+* The Measures cache is filled upon first access to measures using `DwdWeather.query()` and updated whenever a query cannot be fullfilled from the cache.
 * The cache by default resides in `~/.dwd-weather` directory. This can be influenced using the `cachepath` argument of `DwdWeather()`.
 * The amount of data can be ~60 MB per station for full historic extend and this will of course grow in the future.
 
-Status:
+### Status
 
 This piece of software is in a very early stage. No test cases yet.
 Use at your own risk.
