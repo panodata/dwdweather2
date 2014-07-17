@@ -98,8 +98,10 @@ class DwdWeather(object):
         self.cachepath = self.init_cache(cp)
         # fetch latest data into cache
 
-        # TODO: Do this when requests miss the cache
-        #self.import_measures(2667)
+        if "user" in kwargs:
+            self.user = kwargs["user"]
+        if "passwd" in kwargs:
+            self.passwd = kwargs["passwd"]
 
 
     def dict_factory(self, cursor, row):
@@ -166,7 +168,7 @@ class DwdWeather(object):
         Load station meta data from DWD server.
         """
         ftp = FTP(self.server)
-        ftp.login(args.user, args.passwd)
+        ftp.login(self.user, self.passwd)
         path = self.serverpath + "/temp_hum/"
         ftp.cwd(path)
 
@@ -269,7 +271,7 @@ class DwdWeather(object):
         if historic:
             timerange.append("hist")
         ftp = FTP(self.server)
-        ftp.login(args.user, args.passwd)
+        ftp.login(self.user, self.passwd)
         importfiles = []
         for cat in self.categories.keys():
             path = "%s/%s/" % (self.serverpath, cat)
