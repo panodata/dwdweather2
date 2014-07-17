@@ -24,6 +24,7 @@ closest = dw.nearest_station(lon=7, lat=51)
 query_hour = datetime(2014, 3, 22, 12)
 
 result = dw.query(station_id=closest["station_id"], hour=query_hour)
+print result
 ```
 
 `DwdWeather.query()` returns a dict with the following keys:
