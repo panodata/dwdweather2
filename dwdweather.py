@@ -438,6 +438,24 @@ class DwdWeather(object):
                 closest_distance = d
         return closest
 
+    def stations_geojson(self):
+        out = {
+            "type": "FeatureCollection",
+            "features": []
+        }
+        for station in self.stations():
+            out["features"].append({
+                "type": "Feature",
+                "properties": {
+                    "id": station["station_id"],
+                    "name": station["name"]
+                },
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [station["geo_lon"], station["geo_lat"]]
+                }
+            })
+        return out
 
 if __name__ == "__main__":
     import argparse
@@ -464,3 +482,8 @@ if __name__ == "__main__":
     import json
     print("Weather at Cologne/Bonn airport at 2012-01-12 12:00 UTC:")
     print json.dumps(dw.query(2667, datetime(2012, 1, 12, 12)), indent=4, sort_keys=True)
+
+    print("Saving stations GeoJSON file as stations.geojson.")
+    fp = open("stations.geojson", "wb")
+    fp.write(json.dumps(dw.stations_geojson()))
+    fp.close()
