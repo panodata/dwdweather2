@@ -61,7 +61,7 @@ result = dw.query(station_id=closest["station_id"], hour=query_hour)
 
 Some notes:
 
-* Personal FTP user account with DWD GDS is needed
+* Personal FTP user account with DWD GDS is needed. See [here](http://www.dwd.de/bvbw/appmanager/bvbw/dwdwwwDesktop?_nfpb=true&_pageLabel=_dwdwww_spezielle_nutzer_metdienstleister_datenbezug&T26001030691160718267804gsbDocumentPath=Navigation%2FOeffentlichkeit%2FDatenservice%2FDatenanforderungen%2FDatenbezug%2FGlobalerDatensatz%2Fanmeldung__node.html%3F__nnn%3Dtrue) for details.
 * Data is cached
 * Data is loaded into cache upon first query per station
 * Cache by default resides in ~/.dwd-weather
