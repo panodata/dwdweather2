@@ -458,7 +458,8 @@ class DwdWeather(object):
                     "coordinates": [station["geo_lon"], station["geo_lat"]]
                 }
             })
-        return out
+        import json
+        return json.dumps(out)
 
 if __name__ == "__main__":
     import argparse
