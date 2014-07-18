@@ -66,6 +66,8 @@ print result
 
 ### Command line utility:
 
+Note that the DWD FTP account credentials have to be set either via command line options (use `dwdweather -h` for details) or via environment variables DWDUSER and DWDPASS. The former take precedence.
+
 Get closest station (first argument is longitude, second is latitude):
 
     $ dwdweather station 7.0 51.0
