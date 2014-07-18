@@ -82,7 +82,7 @@ Export stations as CSV:
 
 Export stations as GeoJSON:
 
-	$ dwdweather stations -t csv -f stations.geojson
+	$ dwdweather stations -t geojson -f stations.geojson
 
 Get weather at station for certain hour (UTC):
 
