@@ -416,7 +416,9 @@ class DwdWeather(object):
         Return list of dicts with all stations
         """
         out = []
-        sql = "SELECT * FROM stations WHERE date_end IS NULL"
+        sql = """SELECT * FROM stations
+            WHERE date_end IS NULL
+            ORDER BY station_id"""
         c = self.db.cursor()
         for row in c.execute(sql):
             out.append(row)
