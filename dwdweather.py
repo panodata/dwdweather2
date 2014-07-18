@@ -374,28 +374,29 @@ class DwdWeather(object):
             return datetime.utcnow() - latest
 
 
-    def query(self, station_id, hour):
+    def query(self, station_id, hour, recursion=0):
         """
         Get values from cache.
         station_id: Numeric station ID
         hour: datetime object
         """
-        sql = "SELECT * FROM measures WHERE station_id=? AND datetime=?"
-        c = self.db.cursor()
-        c.execute(sql, (station_id, hour.strftime("%Y%m%d%H")))
-        out = c.fetchone()
-        if out is None:
-            # cache miss
-            age = (datetime.utcnow() - hour).total_seconds() / 86400
-            if age < 365:
-                self.import_measures(station_id, latest=True)
-            elif age >= 365 and age <= 366:
-                self.import_measures(station_id, latest=True, historic=True)
-            else:
-                self.import_measures(station_id, historic=True)
-            return self.query(station_id, hour)
-        c.close()
-        return out
+        if recursion < 2 :
+            sql = "SELECT * FROM measures WHERE station_id=? AND datetime=?"
+            c = self.db.cursor()
+            c.execute(sql, (station_id, hour.strftime("%Y%m%d%H")))
+            out = c.fetchone()
+            if out is None:
+                # cache miss
+                age = (datetime.utcnow() - hour).total_seconds() / 86400
+                if age < 360:
+                    self.import_measures(station_id, latest=True)
+                elif age >= 360 and age <= 370:
+                    self.import_measures(station_id, latest=True, historic=True)
+                else:
+                    self.import_measures(station_id, historic=True)
+                return self.query(station_id, hour, recursion=(recursion + 1))
+            c.close()
+            return out
 
     def haversine_distance(self, origin, destination):
         lon1, lat1 = origin
