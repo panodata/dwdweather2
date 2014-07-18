@@ -73,8 +73,9 @@ print result
 * The Measures cache is filled upon first access to measures using `DwdWeather.query()` and updated whenever a query cannot be fullfilled from the cache.
 * The cache by default resides in `~/.dwd-weather` directory. This can be influenced using the `cachepath` argument of `DwdWeather()`.
 * The amount of data can be ~60 MB per station for full historic extend and this will of course grow in the future.
+* If weather data is queried and the query can't be fullfilled from the cache, data is loaded from the server at every query. Even if date has been updated a second before. If the server doesn't have data for the requested time (e.g. since it's not yet available), this causes superfluous network traffic and wait time.
 
 ### Status
 
 This piece of software is in a very early stage. No test cases yet.
-Use at your own risk.
+Only used unter Python 2.7.5. Use at your own risk.
