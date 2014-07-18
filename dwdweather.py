@@ -493,32 +493,80 @@ class DwdWeather(object):
         return contents
 
 if __name__ == "__main__":
+
+
+    def get_station(args):
+        dw = DwdWeather(user=args.user,
+            passwd=args.passwd,
+            cachepath=args.cachepath)
+        import json
+        print json.dumps(dw.nearest_station(lon=args.lon, lat=args.lat), indent=4)
+
+    def get_stations(args):
+        dw = DwdWeather(user=args.user,
+            passwd=args.passwd,
+            cachepath=args.cachepath)
+        output = ""
+        if args.type == "geojson":
+            output = dw.stations_geojson()
+        elif args.type == "csv":
+            output = dw.stations_csv()
+        elif args.type == "plain":
+            output = dw.stations_csv(delimiter="\t")
+        if args.output_path is None:
+            print output
+        else:
+            f = open(args.output_path, "wb")
+            f.write(output)
+            f.close()
+
+    def get_weather(args):
+        hour = datetime.strptime(str(args.hour), "%Y%m%d%H")
+        dw = DwdWeather(user=args.user,
+            passwd=args.passwd,
+            cachepath=args.cachepath)
+        import json
+        print json.dumps(dw.query(2667, hour), indent=4)
+
     import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-u", dest="user",
-        help="DWD FTP user name")
-    parser.add_argument("-p", dest="passwd",
-        help="DWD FTP user password")
-    parser.add_argument("--cache", dest="cachepath",
-        help="Path to cache directory. Defaults to .dwd-weather in user's home dir.")
+    argparser = argparse.ArgumentParser(prog="dwdweather",
+        description="Get weather information for Germany.")
+    argparser.add_argument("-u", dest="user",
+        help="DWD FTP user name. If not set, environment variable DWDUSER is used.",
+        default=os.environ.get("DWDUSER"))
+    argparser.add_argument("-p", dest="passwd",
+        help="DWD FTP user password. If not set, environment variable DWDPASS is used.",
+        default=os.environ.get("DWDPASS"))
+    argparser.add_argument("-c", dest="cachepath",
+        help="Path to cache directory. Defaults to .dwd-weather in user's home dir.",
+        default=os.path.expanduser("~") + os.sep + ".dwd-weather")
 
-    args = parser.parse_args()
-
-    dw = DwdWeather(user=args.user,
-        passwd=args.passwd,
-        cachepath=args.cachepath)
-
-    print("Station close to Cologne:")
-    print(dw.nearest_station(lon=7, lat=51))
+    subparsers = argparser.add_subparsers(title="Actions", help="Main client actions.")
     
-    print("Latest entry age:")
-    print dw.get_data_age()
-    
-    import json
-    print("Weather at Cologne/Bonn airport at 2012-01-12 12:00 UTC:")
-    print json.dumps(dw.query(2667, datetime(2012, 1, 12, 12)), indent=4, sort_keys=True)
+    # station options
+    parser_station = subparsers.add_parser('station',
+        help='Find a station')
+    parser_station.set_defaults(func=get_station)
+    parser_station.add_argument("lon", type=float, choices=range(-180, 180),
+        help="Geographic longitude (x) component as float, e.g. 7.2")
+    parser_station.add_argument("lat", type=float, choices=range(-90, 90),
+        help="Geographic latitude (y) component as float, e.g. 53.9")
 
-    print("Saving stations GeoJSON file as stations.geojson.")
-    fp = open("stations.geojson", "wb")
-    fp.write(json.dumps(dw.stations_geojson()))
-    fp.close()
+    # stations options
+    parser_stations = subparsers.add_parser('stations',
+        help='List or export stations')
+    parser_stations.set_defaults(func=get_stations)
+    parser_stations.add_argument("-t", "--type", dest="type",
+        choices=["geojson", "csv", "plain"], default="plain",
+        help="Export format")
+    parser_stations.add_argument("-f", "--file", type=str, dest="output_path",
+        help="Export file path. If not given, STDOUT is used.")
+    
+    # weather options
+    parser_weather = subparsers.add_parser('weather', help='Get weather data for a station and hour')
+    parser_weather.set_defaults(func=get_weather)
+    parser_weather.add_argument("station_id", type=int, help="Numeric ID of the station, e.g. 2667")
+    parser_weather.add_argument("hour", type=int, help="Time in the form of YYYYMMDDHH")
+
+    args = argparser.parse_args()
+    args.func(args)
