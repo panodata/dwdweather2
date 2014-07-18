@@ -8,7 +8,7 @@ Python client to access DWD weather data (Germany)
     pip install dwdweather
 
 
-### Quick reference
+### Quick reference (Python module)
 
 ```python
 from dwdweather import DwdWeather
@@ -62,6 +62,29 @@ print result
 * `wind_quality_level`: wind data quality level, as int.
 * `wind_speed`: wind speed in meters per second, as float.
 * `wind_structure_version`: version number, as int.
+
+
+### Command line utility:
+
+Get closest station (first argument is longitude, second is latitude):
+
+    $ dwdweather station 7.0 51.0
+
+Get all stations:
+
+    $ dwdweather stations
+
+*Export stations as CSV:
+
+	$ dwdweather stations -t csv -f stations.csv
+
+Export stations as GeoJSON:
+
+	$ dwdweather stations -t csv -f stations.geojson
+
+Get weather at station for certain hour (UTC):
+
+    $ dwdweather weather 2667 2014060122
 
 
 ### Some notes
