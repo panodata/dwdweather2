@@ -461,6 +461,37 @@ class DwdWeather(object):
         import json
         return json.dumps(out)
 
+    def stations_csv(self, delimiter=","):
+        """
+        Return stations list as CSV
+        """
+        import csv
+        import StringIO
+        csvfile = StringIO.StringIO()
+        # assemble field list
+        headers = ["station_id", "date_start", "date_end",
+            "geo_lon", "geo_lat", "height", "name"]
+        writer = csv.writer(csvfile, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(headers)
+        stations = self.stations()
+        for station in stations:
+            row = []
+            for n in range(len(headers)):
+                val = station[headers[n]]
+                if val is None:
+                    val = ""
+                elif type(val) == int:
+                    val = str(val)
+                elif type(val) == float:
+                    val = "%.4f" % val
+                elif type(val) == unicode:
+                    val = val.encode("utf8")
+                row.append(val)
+            writer.writerow(row)
+        contents = csvfile.getvalue()
+        csvfile.close()
+        return contents
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
