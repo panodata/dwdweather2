@@ -8,6 +8,9 @@ from zipfile import ZipFile
 import sqlite3
 from datetime import datetime
 import math
+import re
+import StringIO
+
 
 """
 Reads weather data from DWD Germany.
@@ -26,22 +29,28 @@ See here for details.
 class DwdWeather(object):
 
     # DWD FTP server host name
-    server = "ftp-outgoing2.dwd.de"
+    server = "ftp-cdc.dwd.de"
 
     # FTP server path for our files
-    serverpath = "/gds/gds/specials/climate/tables/germany/hourly_value"
+    serverpath = "/pub/CDC/observations_germany/climate/hourly"
 
     # database Field definition:
     # key = internal field name
     # value = (sqlite type, value category, source column name)
     fields = {
+        "air_temperature": (
+            ("temphum_quality_level", "int"),  # Qualitaets_Niveau
+            ("temphum_structure_version", "int"),  # Struktur_Version
+            ("temphum_temperature", "real"),  # LUFTTEMPERATUR
+            ("temphum_humidity", "real"),  # REL_FEUCHTE
+        ),
         "precipitation": (
             ("precipitation_quality_level", "int"),  # Qualitaets_Niveau
             ("precipitation_fallen", "int"),  # NIEDERSCHLAG_GEFALLEN_IND
             ("precipitation_height", "real"),  # NIEDERSCHLAGSHOEHE
             ("precipitation_form", "int"),  # NIEDERSCHLAGSFORM
         ),
-        "soil_temp": (
+        "soil_temperature": (
             ("soiltemp_quality_level", "int"),  # Qualitaets_Niveau
             ("soiltemp_1_temperature", "real"),  # ERDBODENTEMPERATUR
             ("soiltemp_1_depth", "real"),  # MESS_TIEFE
@@ -54,16 +63,19 @@ class DwdWeather(object):
             ("soiltemp_5_temperature", "real"),  # ERDBODENTEMPERATUR
             ("soiltemp_5_depth", "real"),  # MESS_TIEFE
         ),
+        "solar": (
+            ("solar_quality_level", "int"),  # Qualitaets_Niveau
+            ("solar_duration", "int"),  # SONNENSCHEINDAUER
+            ("solar_sky", "real"),  # DIFFUS_HIMMEL_KW_J
+            ("solar_global", "real"),  # GLOBAL_KW_J
+            ("solar_atmosphere", "real"),  # ATMOSPHAERE_LW_J
+            ("solar_zenith", "real"),  # SONNENZENIT
+            #("solar_TODO", "int"),  # MESS_DATUM_WOZ
+        ),
         "sun": (
             ("sun_quality_level", "int"),  # Qualitaets_Niveau
             ("sun_structure_version", "int"),  # Struktur_Version
             ("sun_duration", "real"),  # STUNDENSUMME_SONNENSCHEIN
-        ),
-        "temp_hum": (
-            ("temphum_quality_level", "int"),  # Qualitaets_Niveau
-            ("temphum_structure_version", "int"),  # Struktur_Version
-            ("temphum_temperature", "real"),  # LUFTTEMPERATUR
-            ("temphum_humidity", "real"),  # REL_FEUCHTE
         ),
         "wind": (
             ("wind_quality_level", "int"),  # Qualitaets_Niveau
@@ -77,9 +89,10 @@ class DwdWeather(object):
     # key=<category (folder name)> , value=<file name code>
     categories = {
         "precipitation": "RR",
-        "soil_temp": "EB",
+        "soil_temperature": "EB",
+        "solar": "ST",
         "sun": "SD",
-        "temp_hum": "TU",
+        "air_temperature": "TU",
         "wind": "FF"
     }
 
@@ -98,10 +111,11 @@ class DwdWeather(object):
         self.cachepath = self.init_cache(cp)
         # fetch latest data into cache
 
-        if "user" in kwargs:
-            self.user = kwargs["user"]
-        if "passwd" in kwargs:
-            self.passwd = kwargs["passwd"]
+        self.user = "anonymous"
+        self.passwd = "guest@example.com"
+
+        if "verbosity" in kwargs:
+            self.verbosity = kwargs["verbosity"]
 
 
     def dict_factory(self, cursor, row):
@@ -153,9 +167,10 @@ class DwdWeather(object):
                 geo_lon real,
                 geo_lat real,
                 height int,
-                name text
+                name text,
+                state text
             )"""
-        index = """CREATE UNIQUE INDEX IF NOT EXISTS unq
+        index = """CREATE UNIQUE INDEX IF NOT EXISTS station_unique
             ON stations (station_id, date_start)"""
         c.execute(create)
         c.execute(index)
@@ -167,31 +182,29 @@ class DwdWeather(object):
         """
         Load station meta data from DWD server.
         """
+        if self.verbosity > 0:
+            print("Importing stations data from FTP server")
         ftp = FTP(self.server)
         ftp.login(self.user, self.passwd)
-        path = self.serverpath + "/temp_hum/"
-        ftp.cwd(path)
-
-        serverfiles = []
-
-        ftp.retrlines('NLST', serverfiles.append)
-        for filename in serverfiles:
-            if "stundenwerte" not in filename:
-                continue
-            if "akt" not in filename:
-                continue
-            output_path = self.cachepath + os.sep + filename
-            #print output_path
-            ftp.retrbinary('RETR ' + filename, open(output_path, 'wb').write)
-            with ZipFile(output_path) as myzip:
-                for f in myzip.infolist():
-                    if "Stationsmetadaten" in f.filename:
-                        myzip.extract(f, self.cachepath + os.sep)
-                        fp = open(self.cachepath + os.sep + f.filename)
-                        self.import_station(fp.read())
-                        fp.close
-                        os.remove(self.cachepath + os.sep + f.filename)
-            os.remove(output_path)
+        for cat in self.categories:
+            if cat == "solar":
+                # workaround - solar has no subdirs
+                path = "%s/%s" % (self.serverpath, cat)
+            else:
+                path = "%s/%s/recent" % (self.serverpath, cat)
+            ftp.cwd(path)
+            # get directory contents
+            serverfiles = []
+            ftp.retrlines('NLST', serverfiles.append)
+            for filename in serverfiles:
+                if "Beschreibung_Stationen" not in filename:
+                    continue
+                if self.verbosity > 1:
+                    print("Reading file %s/%s" % (path, filename))
+                f = StringIO.StringIO()
+                ftp.retrbinary('RETR ' + filename, f.write)
+                self.import_station(f.getvalue())
+                f.close()
         
 
     def import_station(self, content):
@@ -201,50 +214,62 @@ class DwdWeather(object):
         """
         content = content.strip()
         content = content.replace("\r", "")
-        linecount = 0
+        content = content.replace("\n\n", "\n")
+        content = content.decode("latin1")
         insert_sql = """INSERT OR IGNORE INTO stations
-            (station_id, date_start, date_end, geo_lon, geo_lat, height, name)
-            VALUES (?, ?, ?, ?, ?, ?, ?)"""
+            (station_id, date_start, date_end, geo_lon, geo_lat, height, name, state)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)"""
         update_sql = """UPDATE stations
-            SET date_end=?, geo_lon=?, geo_lat=?, height=?, name=?
+            SET date_end=?, geo_lon=?, geo_lat=?, height=?, name=?, state=?
             WHERE station_id=? AND date_start=?"""
         cursor = self.db.cursor()
+        #print content
+        linecount = 0
         for line in content.split("\n"):
             linecount += 1
-            if linecount > 1:
-                line = line.strip()
-                if line == "":
-                    continue
-                parts = line.split(";")
+            line = line.strip()
+            if line == "" or line == u'\x1a':
+                continue
+            #print linecount, line
+            if linecount > 2:
+                # frist 7 fields
+                parts = re.split(r"\s+", line, 6)
+                # seperate name from Bundesland
+                (name, bundesland) = parts[6].rsplit(" ", 1)
+                name = name.strip()
+                del parts[6]
+                parts.append(name)
+                parts.append(bundesland)
+                #print parts
                 for n in range(len(parts)):
                     parts[n] = parts[n].strip()
-                parts[0] = int(parts[0])  # station id
-                parts[1] = int(parts[1])  # height
-                parts[2] = float(parts[2])  # latitude
-                parts[3] = float(parts[3])  # longitude
-                parts[4] = int(parts[4])  # start date
-                if parts[5] == "":  # end date
-                    parts[5] = None
-                else:
-                    parts[5] = int(parts[5])
-                parts[6] = parts[6].decode("latin-1")  # name
+                station_id = int(parts[0])
+                station_height = int(parts[3])
+                station_lat = float(parts[4])
+                station_lon = float(parts[5])
+                station_start = int(parts[1])
+                station_end = int(parts[2])
+                station_name = parts[6]
+                station_state = parts[7]
                 # issue sql
                 cursor.execute(insert_sql, (
-                    parts[0],
-                    parts[4],
-                    parts[5],
-                    parts[3],
-                    parts[2],
-                    parts[1],
-                    parts[6]))
+                    station_id,
+                    station_start,
+                    station_end,
+                    station_lon,
+                    station_lat,
+                    station_height,
+                    station_name,
+                    station_state))
                 cursor.execute(update_sql, (
-                    parts[5],
-                    parts[3],
-                    parts[2],
-                    parts[1],
-                    parts[6],
-                    parts[0],
-                    parts[4]))
+                    station_end,
+                    station_lon,
+                    station_lat,
+                    station_height,
+                    station_name,
+                    station_state,
+                    station_id,
+                    station_start))
         self.db.commit()
 
 
@@ -264,33 +289,76 @@ class DwdWeather(object):
         each ZIP. This path is then handed to the
         CSV -> Sqilte import function.
         """
+        if self.verbosity > 0:
+            print("Importing measures for station %d from FTP server" % station_id)
         # Which files to import
-        timerange = []
+        timeranges = []
         if latest:
-            timerange.append("akt")
+            timeranges.append("recent")
         if historic:
-            timerange.append("hist")
+            timeranges.append("historical")
         ftp = FTP(self.server)
         ftp.login(self.user, self.passwd)
         importfiles = []
+
+        def download_and_import(path, filename, cat, timerange=None):
+            output_path = self.cachepath + os.sep + filename
+            if timerange is None:
+                timerange = "-"
+            data_filename = "data_%s_%s_%s.txt" % (station_id, timerange, cat)
+            if self.verbosity > 1:
+                print("Reading file %s/%s from FTP server" % (path, filename))
+            ftp.retrbinary('RETR ' + filename, open(output_path, 'wb').write)
+            with ZipFile(output_path) as myzip:
+                for f in myzip.infolist():
+                    if "Terminwerte" in f.filename:
+                        # this is our data file
+                        myzip.extract(f, self.cachepath + os.sep)
+                        os.rename(self.cachepath + os.sep + f.filename,
+                            self.cachepath + os.sep + data_filename)
+                        importfiles.append([cat, self.cachepath + os.sep + data_filename])
+            os.remove(output_path)
+
         for cat in self.categories.keys():
-            path = "%s/%s/" % (self.serverpath, cat)
-            ftp.cwd(path)
-            for part in timerange:
-                filename = "stundenwerte_%s_%05d_%s.zip" % (
-                    self.categories[cat], station_id, part)
-                output_path = self.cachepath + os.sep + filename
-                data_filename = "data_%s_%s_%s.txt" % (station_id, cat, part)
-                ftp.retrbinary('RETR ' + filename, open(output_path, 'wb').write)
-                with ZipFile(output_path) as myzip:
-                    for f in myzip.infolist():
-                        if "Terminwerte" in f.filename:
-                            # this is our data file
-                            myzip.extract(f, self.cachepath + os.sep)
-                            os.rename(self.cachepath + os.sep + f.filename,
-                                self.cachepath + os.sep + data_filename)
-                            importfiles.append([cat, self.cachepath + os.sep + data_filename])
-                os.remove(output_path)
+            if self.verbosity > 1:
+                print("Handling category %s" % cat)
+            if cat == "solar":
+                path = "%s/%s" % (self.serverpath, cat)
+                ftp.cwd(path)
+                # list dir content, get right file name
+                serverfiles = []
+                ftp.retrlines('NLST', serverfiles.append)
+                filename = None
+                for fn in serverfiles:
+                    if ("_%05d." % station_id) in fn:
+                        filename = fn
+                        break
+                if filename is None:
+                    if self.verbosity > 1:
+                        print("Station %s has no data for category '%s'" % (station_id, cat))
+                    continue
+                else:
+                    download_and_import(path, filename, cat)
+            else:
+                for timerange in timeranges:
+                    timerange_suffix = "akt"
+                    if timerange == "historical":
+                        timerange_suffix = "hist"
+                    path = "%s/%s/%s" % (self.serverpath, cat, timerange)
+                    ftp.cwd(path)
+                    # list dir content, get right file name
+                    serverfiles = []
+                    ftp.retrlines('NLST', serverfiles.append)
+                    filename = None
+                    for fn in serverfiles:
+                        if ("_%05d_" % station_id) in fn:
+                            filename = fn
+                            break
+                    if filename is None:
+                        if self.verbosity > 1:
+                            print("Station %s has no data for category '%s'" % (station_id, cat))
+                        continue
+                    download_and_import(path, filename, cat, timerange)
         for item in importfiles:
             self.import_measures_textfile(item[0], item[1])
             os.remove(item[1])
@@ -325,9 +393,13 @@ class DwdWeather(object):
                 parts[n] = parts[n].strip()
             #print parts
             if count > 1:
+                # station id
                 parts[0] = int(parts[0])
+                # timestamp
+                if ":" in parts[1]:
+                    parts[1] = parts[1].split(":")[0]
                 parts[1] = int(parts[1])
-                if category in ["wind", "sun", "temp_hum"]:
+                if category in ["wind", "sun", "air_temperature"]:
                     # remove funny redundant datetime
                     del parts[2]
                 insert_datasets.append([parts[0], parts[1]])
@@ -416,9 +488,10 @@ class DwdWeather(object):
         Return list of dicts with all stations
         """
         out = []
-        sql = """SELECT * FROM stations
-            WHERE date_end IS NULL
-            ORDER BY station_id"""
+        sql = """SELECT s2.*
+            FROM stations s1
+            LEFT JOIN stations s2 ON (s1.station_id=s2.station_id AND s1.date_end=s1.date_end)
+            GROUP BY s1.station_id"""
         c = self.db.cursor()
         for row in c.execute(sql):
             out.append(row)
@@ -466,7 +539,6 @@ class DwdWeather(object):
         Return stations list as CSV
         """
         import csv
-        import StringIO
         csvfile = StringIO.StringIO()
         # assemble field list
         headers = ["station_id", "date_start", "date_end",
@@ -494,18 +566,13 @@ class DwdWeather(object):
 
 if __name__ == "__main__":
 
-
     def get_station(args):
-        dw = DwdWeather(user=args.user,
-            passwd=args.passwd,
-            cachepath=args.cachepath)
+        dw = DwdWeather(cachepath=args.cachepath, verbosity=args.verbosity)
         import json
         print json.dumps(dw.nearest_station(lon=args.lon, lat=args.lat), indent=4)
 
     def get_stations(args):
-        dw = DwdWeather(user=args.user,
-            passwd=args.passwd,
-            cachepath=args.cachepath)
+        dw = DwdWeather(cachepath=args.cachepath, verbosity=args.verbosity)
         output = ""
         if args.type == "geojson":
             output = dw.stations_geojson()
@@ -522,21 +589,16 @@ if __name__ == "__main__":
 
     def get_weather(args):
         hour = datetime.strptime(str(args.hour), "%Y%m%d%H")
-        dw = DwdWeather(user=args.user,
-            passwd=args.passwd,
-            cachepath=args.cachepath)
+        dw = DwdWeather(cachepath=args.cachepath, verbosity=args.verbosity)
         import json
-        print json.dumps(dw.query(2667, hour), indent=4)
+        print json.dumps(dw.query(args.station_id, hour), indent=4)
 
     import argparse
     argparser = argparse.ArgumentParser(prog="dwdweather",
         description="Get weather information for Germany.")
-    argparser.add_argument("-u", dest="user",
-        help="DWD FTP user name. If not set, environment variable DWDUSER is used.",
-        default=os.environ.get("DWDUSER"))
-    argparser.add_argument("-p", dest="passwd",
-        help="DWD FTP user password. If not set, environment variable DWDPASS is used.",
-        default=os.environ.get("DWDPASS"))
+    argparser.add_argument("-v", dest="verbosity", action="count",
+        help="Activate verbose output. Use -vv or -vvv to increase verbosity.",
+        default=0)
     argparser.add_argument("-c", dest="cachepath",
         help="Path to cache directory. Defaults to .dwd-weather in user's home dir.",
         default=os.path.expanduser("~") + os.sep + ".dwd-weather")

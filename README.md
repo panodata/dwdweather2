@@ -14,12 +14,8 @@ Python client to access DWD weather data (Germany)
 from dwdweather import DwdWeather
 from datetime import datetime
 
-# Your personal DWD GDS FTP credentials
-user = "myuser"
-passwd = "mypasswd"
-
 # create client
-dw = DwdWeather(user=user, passwd=passwd)
+dw = DwdWeather()
 
 # Find closest station to position
 closest = dw.nearest_station(lon=7, lat=51)
@@ -51,11 +47,17 @@ print result
 * `soiltemp_5_depth`: fifth soil temperature measurement, depth in meters, as float.
 * `soiltemp_5_temperature`: fifth soil temperature measurement, temperature in degrees centigrade, as float.
 * `soiltemp_quality_level`: soil temperature quality level, as int.
+* `solar_quality_level`: quality level of solar data, as int.
+* `solar_duration`: sunshine duration in minutes, as int.
+* `solar_sky`: TODO
+* `solar_global`: TODO
+* `solar_atmosphere`: TODO
+* `solar_zenith`: TODO
 * `sun_duration`: Duration of sunshine per hour in minutes, as float.
 * `sun_quality_level`: quality level of sunshine data, as int.
 * `sun_structure_version`: version number, as int.
 * `temphum_humidity`: relative air humidity in percent, as float.
-* `temphum_quality_level`: data qqualit level of air temperature and humidity data, as int.
+* `temphum_quality_level`: data quality level of air temperature and humidity data, as int.
 * `temphum_structure_version`: version number, as int.
 * `temphum_temperature`: air temperature in degrees centigrade, as float.
 * `wind_direction`: wind direction in degrees, as int (0 - 360).
@@ -65,8 +67,6 @@ print result
 
 
 ### Command line utility:
-
-Note that the DWD FTP account credentials have to be set either via command line options (use `dwdweather -h` for details) or via environment variables DWDUSER and DWDPASS. The former take precedence.
 
 Get closest station (first argument is longitude, second is latitude):
 
@@ -91,7 +91,6 @@ Get weather at station for certain hour (UTC):
 
 ### Some notes
 
-* Personal FTP user account with DWD GDS is needed. See [here](http://www.dwd.de/bvbw/appmanager/bvbw/dwdwwwDesktop?_nfpb=true&_pageLabel=_dwdwww_spezielle_nutzer_metdienstleister_datenbezug&T26001030691160718267804gsbDocumentPath=Navigation%2FOeffentlichkeit%2FDatenservice%2FDatenanforderungen%2FDatenbezug%2FGlobalerDatensatz%2Fanmeldung__node.html%3F__nnn%3Dtrue) for details.
 * Data is cached in a local sqlite3 database for fast queries.
 * The Stations cache is filled upon first request to `DwdWeather.stations()` or `DwdWeather.nearest_station()`
 * The Stations cache will not be refreshed automatically. Use `DwdWeather.import_stations()` to do this.
@@ -100,7 +99,17 @@ Get weather at station for certain hour (UTC):
 * The amount of data can be ~60 MB per station for full historic extend and this will of course grow in the future.
 * If weather data is queried and the query can't be fullfilled from the cache, data is loaded from the server at every query. Even if the data has been updated a second before. If the server doesn't have data for the requested time (e.g. since it's not yet available), this causes superfluous network traffic and wait time. Certainly space for improvement here.
 
+
 ### Status
 
 This piece of software is in a very early stage. No test cases yet.
 Only used unter Python 2.7.5. Use at your own risk.
+
+
+### License (Code)
+
+Licensed under the MTI license. See file LICENSE for details.
+
+### Data license
+
+The DWD has information about their re-use policy in [German](http://www.dwd.de/bvbw/appmanager/bvbw/dwdwwwDesktop?_nfpb=true&_windowLabel=dwdwww_main_book&T26001030691160718267804gsbDocumentPath=Content%2FOeffentlichkeit%2FWV%2FWVDS%2FDatenanforderungen%2FDatenbezug%2Fteaser__grundversorgung.html&switchLang=de&_pageLabel=_dwdwww_spezielle_nutzer_metdienstleister_datenbezug) and [English](http://www.dwd.de/bvbw/appmanager/bvbw/dwdwwwDesktop?_nfpb=true&_windowLabel=dwdwww_main_book&T26001030691160718267804gsbDocumentPath=Content%2FOeffentlichkeit%2FWV%2FWVDS%2FDatenanforderungen%2FDatenbezug%2Fteaser__grundversorgung.html&switchLang=en&_pageLabel=_dwdwww_spezielle_nutzer_metdienstleister_datenbezug).
