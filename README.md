@@ -76,7 +76,7 @@ Get all stations:
 
     $ dwdweather stations
 
-*Export stations as CSV:
+Export stations as CSV:
 
 	$ dwdweather stations -t csv -f stations.csv
 
