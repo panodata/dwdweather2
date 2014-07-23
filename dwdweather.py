@@ -114,6 +114,7 @@ class DwdWeather(object):
         self.user = "anonymous"
         self.passwd = "guest@example.com"
 
+        self.verbosity = 0
         if "verbosity" in kwargs:
             self.verbosity = kwargs["verbosity"]
 
