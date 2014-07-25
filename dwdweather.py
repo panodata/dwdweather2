@@ -400,7 +400,7 @@ class DwdWeather(object):
                 if ":" in parts[1]:
                     parts[1] = parts[1].split(":")[0]
                 parts[1] = int(parts[1])
-                if category in ["wind", "sun", "air_temperature"]:
+                if category in ["sun"]:
                     # remove funny redundant datetime
                     del parts[2]
                 insert_datasets.append([parts[0], parts[1]])
@@ -419,9 +419,11 @@ class DwdWeather(object):
                         try:
                             parts[n] = int(parts[n])
                         except ValueError:
-                            sys.stderr.write("Error in converting field to int.\n")
-                            print(parts)
-                            print(fieldname, fieldtype)
+                            sys.stderr.write("Error in converting field '%s', value '%s' to int.\n" % (
+                                fieldname, parts[n]))
+                            (t, val, trace) = sys.exc_info()
+                            import traceback
+                            traceback.print_tb(trace)
                             sys.exit()
                     dataset.append(parts[n])
                 # station_id and datetime for WHERE clause
