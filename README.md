@@ -100,12 +100,6 @@ Get weather at station for certain hour (UTC):
 * If weather data is queried and the query can't be fullfilled from the cache, data is loaded from the server at every query. Even if the data has been updated a second before. If the server doesn't have data for the requested time (e.g. since it's not yet available), this causes superfluous network traffic and wait time. Certainly space for improvement here.
 
 
-### Status
-
-This piece of software is in a very early stage. No test cases yet.
-Only used unter Python 2.7.5. Use at your own risk.
-
-
 ### License (Code)
 
 Licensed under the MTI license. See file LICENSE for details.
@@ -113,3 +107,26 @@ Licensed under the MTI license. See file LICENSE for details.
 ### Data license
 
 The DWD has information about their re-use policy in [German](http://www.dwd.de/bvbw/appmanager/bvbw/dwdwwwDesktop?_nfpb=true&_windowLabel=dwdwww_main_book&T26001030691160718267804gsbDocumentPath=Content%2FOeffentlichkeit%2FWV%2FWVDS%2FDatenanforderungen%2FDatenbezug%2Fteaser__grundversorgung.html&switchLang=de&_pageLabel=_dwdwww_spezielle_nutzer_metdienstleister_datenbezug) and [English](http://www.dwd.de/bvbw/appmanager/bvbw/dwdwwwDesktop?_nfpb=true&_windowLabel=dwdwww_main_book&T26001030691160718267804gsbDocumentPath=Content%2FOeffentlichkeit%2FWV%2FWVDS%2FDatenanforderungen%2FDatenbezug%2Fteaser__grundversorgung.html&switchLang=en&_pageLabel=_dwdwww_spezielle_nutzer_metdienstleister_datenbezug).
+
+### Status
+
+This piece of software is in a very early stage. No test cases yet.
+Only used unter Python 2.7.5. Use at your own risk.
+
+### Changelog
+
+* *Version 0.7*:
+  * Adapted to match modified Schema for sun data
+* *Version 0.6*:
+  * Adapted to match modified Schema for wind and air temperature data
+* *Version 0.5*:
+  * Fixed a problem where verbosity was not set
+* *Version 0.4*:
+  * Uses different DWD FTP server, no longer requires FTP user authentication
+  * Provides access to more data ("solar")
+  * Reading of station data much faster due to use of specific files from DWD
+  * Additional fixes
+* *Version 0.2*:
+  * Added command line client functions
+* *Version 0.1*:
+  * Initial version

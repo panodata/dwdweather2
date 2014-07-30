@@ -400,9 +400,6 @@ class DwdWeather(object):
                 if ":" in parts[1]:
                     parts[1] = parts[1].split(":")[0]
                 parts[1] = int(parts[1])
-                if category in ["sun"]:
-                    # remove funny redundant datetime
-                    del parts[2]
                 insert_datasets.append([parts[0], parts[1]])
                 dataset = []
                 # station_id and datetime
