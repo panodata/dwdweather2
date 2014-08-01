@@ -604,14 +604,22 @@ if __name__ == "__main__":
         default=os.path.expanduser("~") + os.sep + ".dwd-weather")
 
     subparsers = argparser.add_subparsers(title="Actions", help="Main client actions.")
+
+    def float_range(min, max):
+        def check_range(x):
+            x = float(x)
+            if x < min or x > max:
+                raise argparse.ArgumentTypeError("%r not in range [%r, %r]"%(x,min,max))
+            return x
+        return check_range
     
     # station options
     parser_station = subparsers.add_parser('station',
         help='Find a station')
     parser_station.set_defaults(func=get_station)
-    parser_station.add_argument("lon", type=float, choices=range(-180, 180),
+    parser_station.add_argument("lon", type=float_range(-180, 180),
         help="Geographic longitude (x) component as float, e.g. 7.2")
-    parser_station.add_argument("lat", type=float, choices=range(-90, 90),
+    parser_station.add_argument("lat", type=float_range(-90, 90),
         help="Geographic latitude (y) component as float, e.g. 53.9")
 
     # stations options
