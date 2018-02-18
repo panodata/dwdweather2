@@ -86,7 +86,11 @@ Export stations as GeoJSON:
 
 Get weather at station for certain hour (UTC):
 
-    $ dwdweather weather 2667 2014060122
+    $ dwdweather weather 2667 2018021707
+
+Finally, to drop the cache database before performing any work, use the "--reset-cache" option:
+
+    $ dwdweather -vvv stations --reset-cache
 
 
 ### Some notes
@@ -118,6 +122,7 @@ Only used unter Python 2.7.5. Use at your own risk.
 * *In progress*:
   * This and that: Fix console script entrypoint. Improve imports, debugging and inline comments.
   * Adapt to changes on upstream server ftp-cdc.dwd.de
+  * Add "--reset-cache" option for dropping the cache database before performing any work
 
 * *Version 0.7*:
   * Adapted to match modified Schema for sun data

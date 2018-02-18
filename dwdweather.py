@@ -394,12 +394,21 @@ class DwdWeather(object):
         - cachepath
         """
 
+        # Configure cache storage
         cp = None
         if "cachepath" in kwargs:
             cp = kwargs["cachepath"]
-        self.cachepath = self.init_cache(cp)
-        # fetch latest data into cache
+        self.cachepath = self.get_cache_path(cp)
 
+        # Reset cache if requested
+        if "reset_cache" in kwargs and kwargs["reset_cache"]:
+            self.reset_cache()
+
+        # Initialize cache
+        self.init_cache()
+
+
+        # Credentials for CDC FTP server
         self.user = "anonymous"
         self.passwd = "guest@example.com"
 
@@ -418,19 +427,31 @@ class DwdWeather(object):
         return d
 
 
-    def init_cache(self, path):
-        """
-        Creates .dwd-weather directory in the current
-        user's home, where a cache database and config
-        file will reside
-        """
+    def get_cache_path(self, path):
         if path is None:
             home = os.path.expanduser("~") + os.sep + ".dwd-weather"
         else:
             home = path
         if not os.path.exists(home):
             os.mkdir(home)
-        self.db = sqlite3.connect(home + os.sep + "dwd-weather.db")
+        return home
+
+    def get_cache_database(self):
+        database_file = os.path.join(self.cachepath, "dwd-weather.db")
+        return database_file
+
+    def reset_cache(self):
+        database_file = self.get_cache_database()
+        os.remove(database_file)
+
+    def init_cache(self):
+        """
+        Creates .dwd-weather directory in the current
+        user's home, where a cache database and config
+        file will reside
+        """
+        database_file = self.get_cache_database()
+        self.db = sqlite3.connect(database_file)
         self.db.row_factory = self.dict_factory
         c = self.db.cursor()
         # Create measures table and index
@@ -465,7 +486,6 @@ class DwdWeather(object):
         c.execute(create)
         c.execute(index)
         self.db.commit()
-        return home
 
 
     def import_stations(self):
@@ -897,11 +917,11 @@ class DwdWeather(object):
 def main():
 
     def get_station(args):
-        dw = DwdWeather(cachepath=args.cachepath, verbosity=args.verbosity)
+        dw = DwdWeather(cachepath=args.cachepath, reset_cache=args.reset_cache, verbosity=args.verbosity)
         print json.dumps(dw.nearest_station(lon=args.lon, lat=args.lat), indent=4)
 
     def get_stations(args):
-        dw = DwdWeather(cachepath=args.cachepath, verbosity=args.verbosity)
+        dw = DwdWeather(cachepath=args.cachepath, reset_cache=args.reset_cache, verbosity=args.verbosity)
         output = ""
         if args.type == "geojson":
             output = dw.stations_geojson()
@@ -917,6 +937,9 @@ def main():
             f.close()
 
     def get_weather(args):
+
+        # Workhorse
+        dw = DwdWeather(cachepath=args.cachepath, reset_cache=args.reset_cache, verbosity=args.verbosity)
         hour = datetime.strptime(str(args.hour), "%Y%m%d%H")
         dw = DwdWeather(cachepath=args.cachepath, verbosity=args.verbosity)
         print json.dumps(dw.query(args.station_id, hour), indent=4, sort_keys=True)
@@ -964,6 +987,10 @@ def main():
     parser_weather.set_defaults(func=get_weather)
     parser_weather.add_argument("station_id", type=int, help="Numeric ID of the station, e.g. 2667")
     parser_weather.add_argument("hour", type=int, help="Time in the form of YYYYMMDDHH")
+
+    # "--reset-cache" option for dropping the cache database before performing any work
+    for parser in [parser_station, parser_stations, parser_weather]:
+        parser.add_argument("--reset-cache", action='store_true', help="Drop the cache database")
 
     args = argparser.parse_args()
     args.func(args)
