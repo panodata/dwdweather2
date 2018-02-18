@@ -30,40 +30,35 @@ print result
 
 `DwdWeather.query()` returns a dict with the following keys:
 
+TODO: Update these fields for the "hourly" resolution, add the fields for the "10_minutes" resolution.
+
 * `station_id`: Station identifier, as int.
 * `datetime`: The hour as int, e.g. `2013011212`.
 * `precipitation_fallen`: Whether or not there has been precipitation within the hour, as int. 0 for no, 1 for yes.
 * `precipitation_form`: TODO
 * `precipitation_height`: Height of hourly precipitation in mm, as float.
 * `precipitation_quality_level`: Data quality level, as int.
-* `soiltemp_1_depth`: first soil temperature measurement, depth in meters, as float.
-* `soiltemp_1_temperature`: first soil temperature measurement, temperature in degrees centigrade, as float.
-* `soiltemp_2_depth`: second soil temperature measurement, depth in meters, as float.
-* `soiltemp_2_temperature`: second soil temperature measurement, temperature in degrees centigrade, as float.
-* `soiltemp_3_depth`: third soil temperature measurement, depth in meters, as float.
-* `soiltemp_3_temperature`: third soil temperature measurement, temperature in degrees centigrade, as float.
-* `soiltemp_4_depth`: fourth soil temperature measurement, depth in meters, as float.
-* `soiltemp_4_temperature`: fourth soil temperature measurement, temperature in degrees centigrade, as float.
-* `soiltemp_5_depth`: fifth soil temperature measurement, depth in meters, as float.
-* `soiltemp_5_temperature`: fifth soil temperature measurement, temperature in degrees centigrade, as float.
+* `soiltemp_temperature_002`: Soil temperature in   2 cm depth, as float.
+* `soiltemp_temperature_005`: Soil temperature in   5 cm depth, as float.
+* `soiltemp_temperature_010`: Soil temperature in  10 cm depth, as float.
+* `soiltemp_temperature_020`: Soil temperature in  20 cm depth, as float.
+* `soiltemp_temperature_050`: Soil temperature in  50 cm depth, as float.
+* `soiltemp_temperature_100`: Soil temperature in 100 cm depth, as float.
 * `soiltemp_quality_level`: soil temperature quality level, as int.
-* `solar_quality_level`: quality level of solar data, as int.
 * `solar_duration`: sunshine duration in minutes, as int.
 * `solar_sky`: TODO
 * `solar_global`: TODO
 * `solar_atmosphere`: TODO
 * `solar_zenith`: TODO
+* `solar_quality_level`: quality level of solar data, as int.
 * `sun_duration`: Duration of sunshine per hour in minutes, as float.
 * `sun_quality_level`: quality level of sunshine data, as int.
-* `sun_structure_version`: version number, as int.
-* `temphum_humidity`: relative air humidity in percent, as float.
-* `temphum_quality_level`: data quality level of air temperature and humidity data, as int.
-* `temphum_structure_version`: version number, as int.
-* `temphum_temperature`: air temperature in degrees centigrade, as float.
+* `airtemp_humidity`: relative air humidity in percent, as float.
+* `airtemp_temperature`: air temperature in degrees centigrade, as float.
+* `airtemp_quality_level`: data quality level of air temperature and humidity data, as int.
 * `wind_direction`: wind direction in degrees, as int (0 - 360).
-* `wind_quality_level`: wind data quality level, as int.
 * `wind_speed`: wind speed in meters per second, as float.
-* `wind_structure_version`: version number, as int.
+* `wind_quality_level`: wind data quality level, as int.
 
 
 ### Command line utility:
@@ -110,10 +105,13 @@ Choose dataset of different resolution:
 * Data is cached in a local sqlite3 database for fast queries.
 * The Stations cache is filled upon first request to `DwdWeather.stations()` or `DwdWeather.nearest_station()`
 * The Stations cache will not be refreshed automatically. Use `DwdWeather.import_stations()` to do this.
-* The Measures cache is filled upon first access to measures using `DwdWeather.query()` and updated whenever a query cannot be fullfilled from the cache.
+* The Measures cache is filled upon first access to measures using `DwdWeather.query()` and updated
+  whenever a query cannot be fulfilled from the cache.
 * The cache by default resides in `~/.dwd-weather` directory. This can be influenced using the `cachepath` argument of `DwdWeather()`.
 * The amount of data can be ~60 MB per station for full historic extend and this will of course grow in the future.
-* If weather data is queried and the query can't be fullfilled from the cache, data is loaded from the server at every query. Even if the data has been updated a second before. If the server doesn't have data for the requested time (e.g. since it's not yet available), this causes superfluous network traffic and wait time. Certainly space for improvement here.
+* If weather data is queried and the query can't be fulfilled from the cache, data is loaded from the server at every query.
+  Even if the data has been updated a second before. If the server doesn't have data for the requested time
+  (e.g. since it's not yet available), this causes superfluous network traffic and wait time. Certainly space for improvement here.
 
 
 ### License (Code)
@@ -138,6 +136,7 @@ Only used unter Python 2.7.5. Use at your own risk.
   * Add "--categories" option for specifying list of comma-separated category names to import
   * Add acquisition categories "pressure", "cloudiness" and "visibility"
   * Add acquisition resolution "10_minutes" (WIP)
+  * Improve naming of some fields for the "hourly" resolution
 
 * *Version 0.7*:
   * Adapted to match modified Schema for sun data
