@@ -14,6 +14,7 @@ from copy import deepcopy
 from ftplib import FTP
 from zipfile import ZipFile
 from datetime import datetime
+from collections import OrderedDict
 
 
 """
@@ -50,15 +51,16 @@ class DwdCdcKnowledge(object):
             {'key': 'VV', 'name': 'visibility'},
         ]
 
+
         # The different resolutions for climate data
         class resolutions:
 
-            class minutes_10:
-                path = '10_minutes'
-
-
             # Temporal resolution: hourly
             class hourly:
+
+                # Which format does the timestamp of this resolution have?
+                __timestamp_format__ = "%Y%m%d%H"
+
 
                 """
                 ===============
@@ -473,6 +475,53 @@ class DwdCdcKnowledge(object):
                 )
 
 
+            # Temporal resolution: 10 minutes
+            class minutes_10:
+
+                # Which FTP folder to use
+                __folder__ = '10_minutes'
+
+                # Which format does the timestamp of this resolution have?
+                __timestamp_format__ = "%Y%m%d%H%M"
+
+
+                """
+                ===============
+                Air temperature
+                ===============
+
+                Documentation
+                -------------
+
+                - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/10_minutes/air_temperature/meta_data/
+
+                Fields
+                ------
+                ::
+
+                    Field               Description                     Format or unit
+                    STATIONS_ID         Station identification number   Integer
+                    MESS_DATUM          Measurement time                YYYYMMDDHH
+                    QN                  Quality level                   Integer: 1-10 and -999, for coding see paragraph "Quality information" in PDF.
+                    PP_10               Pressure at station height      hPA
+                    TT_10               Air temperature 2m              °C
+                    TM5_10              Air temperature 5cm             °C
+                    RF_10               Relative humidity 2m            %
+                    TD_10               Dew point temperature 2m        °C
+                    eor                 End of record, can be ignored
+
+                Missing values are marked as -999. All dates given are in UTC.
+                """
+                air_temperature = (
+                    ("airtemp_quality_level", "int"),       # Quality level
+                    ("airtemp_pressure_station", "real"),   # Pressure at station height
+                    ("airtemp_temperature_200", "real"),    # Air temperature 2m
+                    ("airtemp_temperature_005", "real"),    # Air temperature 5cm
+                    ("airtemp_humidity", "real"),           # Relative humidity 2m
+                    ("airtemp_dewpoint", "real"),           # Dew point temperature 2m
+                )
+
+
             """
             Quality information
             The quality level "Qualitätsniveau" (QN) given here applies
@@ -493,25 +542,39 @@ class DwdCdcKnowledge(object):
             """
 
 
+        @classmethod
+        def get_resolutions(cls):
+            resolutions_map = OrderedDict()
+            resolutions = DwdCdcKnowledge.as_dict(cls.resolutions)
+            for name, class_ in resolutions.iteritems():
+                folder = name
+                if hasattr(class_, '__folder__'):
+                    folder = class_.__folder__
+                resolutions_map[folder] = class_
+            return resolutions_map
+
+        @classmethod
+        def get_resolution_by_name(cls, resolution):
+            resolutions_map = cls.get_resolutions()
+            return resolutions_map[resolution]
+
+    @classmethod
+    def as_dict(cls, what):
+        content = {}
+        for entry in dir(what):
+            if entry.startswith('__'): continue
+            content[entry] = getattr(what, entry)
+        return content
+
+
 class DwdWeather(object):
 
     # DWD FTP server host name
     server = "ftp-cdc.dwd.de"
 
     # FTP server path for our files
-    serverpath = "/pub/CDC/observations_germany/climate/hourly"
+    climate_observations_path = "/pub/CDC/observations_germany/climate/{resolution}"
 
-    # Database field definition:
-    # key = internal field name
-    # value = (sqlite type, value category, source column name)
-    knowledge = DwdCdcKnowledge.climate.resolutions.hourly
-    fields = {}
-    for entry in dir(knowledge):
-        if entry.startswith('__'): continue
-        fields[entry] = getattr(knowledge, entry)
-
-    # Categories of measurements on the server
-    categories = DwdCdcKnowledge.climate.measurements
 
     def __init__(self, **kwargs):
         """
@@ -521,7 +584,32 @@ class DwdWeather(object):
         - cachepath
         """
 
-        # Configure cache storage
+
+        # =================
+        # Configure context
+        # =================
+
+        # Temporal resolution
+        self.resolution = kwargs['resolution']
+
+        # Categories of measurements on the server
+        self.categories = DwdCdcKnowledge.climate.measurements
+
+
+        # ========================
+        # Configure cache database
+        # ========================
+
+        # Database field definition
+        knowledge = DwdCdcKnowledge.climate.get_resolution_by_name(self.resolution)
+        self.fields = DwdCdcKnowledge.as_dict(knowledge)
+
+        # Sanity checks
+        if not self.fields:
+            print('ERROR: No schema information for resolution "%s" found, please check your knowledge base.' % self.resolution)
+            sys.exit(1)
+
+        # Storage location
         cp = None
         if "cachepath" in kwargs:
             cp = kwargs["cachepath"]
@@ -531,9 +619,16 @@ class DwdWeather(object):
         if "reset_cache" in kwargs and kwargs["reset_cache"]:
             self.reset_cache()
 
-        # Initialize cache
+        # Initialize
         self.init_cache()
 
+
+        # =========================
+        # Configure FTP data source
+        # =========================
+
+        # Path to folder on CDC FTP server
+        self.serverpath = self.climate_observations_path.format(resolution=self.resolution)
 
         # Credentials for CDC FTP server
         self.user = "anonymous"
@@ -581,11 +676,15 @@ class DwdWeather(object):
         self.db = sqlite3.connect(database_file)
         self.db.row_factory = self.dict_factory
         c = self.db.cursor()
+
+        tablename = self.get_measurement_table()
+
         # Create measures table and index
-        create = """CREATE TABLE IF NOT EXISTS measures
+        create = """CREATE TABLE IF NOT EXISTS %s
             (
                 station_id int,
-                datetime int, """
+                datetime int, """ % tablename
+
         create_fields = []
         for category in sorted(self.fields.keys()):
             for fieldname, fieldtype in self.fields[category]:
@@ -594,7 +693,7 @@ class DwdWeather(object):
         create += ")"
         c.execute(create)
         index = """CREATE UNIQUE INDEX IF NOT EXISTS unq
-            ON measures (station_id, datetime)"""
+            ON %s (station_id, datetime)""" % tablename
         c.execute(index)
         # create stations table and index
         create = """CREATE TABLE IF NOT EXISTS stations
@@ -860,11 +959,12 @@ class DwdWeather(object):
         content = content.strip()
 
         # Create SQL template
+        tablename = self.get_measurement_table()
         sets = []
         for fieldname, fieldtype in self.fields[category]:
             sets.append(fieldname + "=?")
-        insert_template = "INSERT OR IGNORE INTO measures (station_id, datetime) VALUES (?, ?)"
-        update_template = "UPDATE measures SET %s WHERE station_id=? AND datetime=?" % ", ".join(sets)
+        insert_template = "INSERT OR IGNORE INTO %s (station_id, datetime) VALUES (?, ?)" % tablename
+        update_template = "UPDATE %s SET %s WHERE station_id=? AND datetime=?" % (tablename, ", ".join(sets))
 
         # Create data rows
         insert_datasets = []
@@ -886,9 +986,7 @@ class DwdWeather(object):
                 parts[0] = int(parts[0])
 
                 # Parse timestamp, ignore minutes
-                if ":" in parts[1]:
-                    parts[1] = parts[1].split(":")[0]
-                parts[1] = int(parts[1])
+                parts[1] = int(parts[1].replace('T', '').replace(':', ''))
 
                 insert_datasets.append([parts[0], parts[1]])
                 dataset = []
@@ -912,8 +1010,7 @@ class DwdWeather(object):
                             traceback.print_tb(trace)
                             sys.exit()
                     elif fieldtype == "datetime":
-                        if ":" in parts[n]:
-                            parts[n] = parts[n].split(":")[0]
+                        parts[n] = int(parts[n].replace('T', '').replace(':', ''))
 
                     dataset.append(parts[n])
 
@@ -931,7 +1028,7 @@ class DwdWeather(object):
         """
         Return age of latest dataset as datetime.timedelta
         """
-        sql = "SELECT MAX(datetime) AS maxdatetime FROM measures"
+        sql = "SELECT MAX(datetime) AS maxdatetime FROM %s" % self.get_measurement_table()
         c = self.db.cursor()
         c.execute(sql)
         item = c.fetchone()
@@ -939,28 +1036,34 @@ class DwdWeather(object):
             latest =  datetime.strptime(str(item["maxdatetime"]), "%Y%m%d%H")
             return datetime.utcnow() - latest
 
+    def get_measurement_table(self):
+        return 'measures_%s' % self.resolution
 
-    def query(self, station_id, hour, categories=None, recursion=0):
+    def get_timestamp_format(self):
+        knowledge = DwdCdcKnowledge.climate.get_resolution_by_name(self.resolution)
+        return knowledge.__timestamp_format__
+
+    def query(self, station_id, timestamp, categories=None, recursion=0):
         """
         Get values from cache.
         station_id: Numeric station ID
-        hour: datetime object
+        timestamp: datetime object
         """
-        if recursion < 2 :
-            sql = "SELECT * FROM measures WHERE station_id=? AND datetime=?"
+        if recursion < 2:
+            sql = "SELECT * FROM %s WHERE station_id=? AND datetime=?" % self.get_measurement_table()
             c = self.db.cursor()
-            c.execute(sql, (station_id, hour.strftime("%Y%m%d%H")))
+            c.execute(sql, (station_id, timestamp.strftime(self.get_timestamp_format())))
             out = c.fetchone()
             if out is None:
                 # cache miss
-                age = (datetime.utcnow() - hour).total_seconds() / 86400
+                age = (datetime.utcnow() - timestamp).total_seconds() / 86400
                 if age < 360:
                     self.import_measures(station_id, categories=categories, latest=True)
                 elif age >= 360 and age <= 370:
                     self.import_measures(station_id, categories=categories, latest=True, historic=True)
                 else:
                     self.import_measures(station_id, categories=categories, historic=True)
-                return self.query(station_id, hour, categories=categories, recursion=(recursion + 1))
+                return self.query(station_id, timestamp, categories=categories, recursion=(recursion + 1))
             c.close()
             return out
 
@@ -1088,16 +1191,17 @@ def main():
     def get_weather(args):
 
         # Workhorse
-        dw = DwdWeather(cachepath=args.cachepath, reset_cache=args.reset_cache, verbosity=args.verbosity)
+        dw = DwdWeather(resolution=str(args.resolution), cachepath=args.cachepath, reset_cache=args.reset_cache, verbosity=args.verbosity)
 
         # Sanitize some input values
-        hour = datetime.strptime(str(args.hour), "%Y%m%d%H")
+        timestamp = datetime.strptime(str(args.timestamp), dw.get_timestamp_format())
         categories = None
         if args.categories:
             categories = [cat.strip() for cat in args.categories.split(',')]
 
         # Query data
-        print json.dumps(dw.query(args.station_id, hour, categories=categories), indent=4, sort_keys=True)
+        results = dw.query(args.station_id, timestamp, categories=categories)
+        print json.dumps(results, indent=4, sort_keys=True)
 
     argparser = argparse.ArgumentParser(prog="dwdweather",
         description="Get weather information for Germany.")
@@ -1141,13 +1245,18 @@ def main():
     parser_weather = subparsers.add_parser('weather', help='Get weather data for a station and hour')
     parser_weather.set_defaults(func=get_weather)
     parser_weather.add_argument("station_id", type=int, help="Numeric ID of the station, e.g. 2667")
-    parser_weather.add_argument("hour", type=int, help="Time in the form of YYYYMMDDHH")
+    parser_weather.add_argument("timestamp", type=int, help="Timestamp in the format of yyyymmddHHMM or yyyymmddHHMM")
 
-    # "--categories" option for restricting import to specified category names
-    categories_available = ', '.join([item['name'] for item in DwdCdcKnowledge.climate.measurements])
-    parser_weather.add_argument("--categories", type=str,
-        help="List of comma-separated categories to import, choose from: %s.\n"
-             "The default setting is to import all categories per station." % categories_available)
+    # "--resolution" option for choosing the corresponding dataset, defaults to "hourly"
+    resolutions_available = DwdCdcKnowledge.climate.get_resolutions().keys()
+    parser_weather.add_argument("--resolution", type=str, choices=resolutions_available, default="hourly",
+        help="Select dataset by resolution. By default, the \"hourly\" dataset is used.")
+
+    # "--categories" option for restricting import to specified category names, defaults to "all"
+    categories_available = [item['name'] for item in DwdCdcKnowledge.climate.measurements]
+    parser_weather.add_argument("--categories", type=str, choices=categories_available,
+        help="List of comma-separated categories to import. "
+             "By default, *all* categories will be imported.")
 
     # "--reset-cache" option for dropping the cache database before performing any work
     for parser in [parser_station, parser_stations, parser_weather]:

@@ -100,6 +100,10 @@ Finally, to drop the cache database before performing any work, use the "--reset
 
     $ dwdweather -vvv stations --reset-cache
 
+Choose dataset of different resolution:
+
+    $ dwdweather -vvv weather 2667 201802170730 --resolution 10_minutes
+
 
 ### Some notes
 
@@ -133,6 +137,7 @@ Only used unter Python 2.7.5. Use at your own risk.
   * Add "--reset-cache" option for dropping the cache database before performing any work
   * Add "--categories" option for specifying list of comma-separated category names to import
   * Add acquisition categories "pressure", "cloudiness" and "visibility"
+  * Add acquisition resolution "10_minutes" (WIP)
 
 * *Version 0.7*:
   * Adapted to match modified Schema for sun data
