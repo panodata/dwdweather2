@@ -44,7 +44,10 @@ class DwdCdcKnowledge(object):
             {'key': 'SD', 'name': 'sun'},
             {'key': 'ST', 'name': 'solar'},
             {'key': 'RR', 'name': 'precipitation'},
+            {'key': 'P0', 'name': 'pressure'},
             {'key': 'FF', 'name': 'wind'},
+            {'key': 'N',  'name': 'cloudiness'},
+            {'key': 'VV', 'name': 'visibility'},
         ]
 
         # The different resolutions for climate data
@@ -247,6 +250,48 @@ class DwdCdcKnowledge(object):
                 )
 
 
+                """
+                ========
+                Pressure
+                ========
+
+                Documentation
+                -------------
+
+                - Recent
+
+                    - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
+                    - Temporal resolution:  hourly
+                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/pressure/recent/DESCRIPTION_obsgermany_climate_hourly_pressure_recent_en.pdf
+
+                - Historical
+
+                    - Temporal coverage:    01.01.1949 - 31.12.2016
+                    - Temporal resolution:  hourly
+                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/pressure/historical/DESCRIPTION_obsgermany_climate_hourly_pressure_historical_en.pdf
+
+
+                Fields
+                ------
+                ::
+
+                    Field               Description                     Format or unit
+                    STATIONS_ID         Station identification number   Integer
+                    MESS_DATUM          Measurement time                YYYYMMDDHH
+                    QN_8, QN_9          Quality level                   Integer: 1-10 and -999, for coding see paragraph "Quality information" in PDF.
+                    P                   Mean sea level pressure         hPA
+                    P0                  Pressure at station height      hPA
+                    eor                 End of record, can be ignored
+
+                Missing values are marked as -999. All dates given are in UTC.
+
+                """
+                pressure = (
+                    ("pressure_quality_level", "int"),  # Quality level
+                    ("pressure_normalized", "real"),    # Mean sea level pressure
+                    ("pressure_upstream", "real"),      # Pressure at station height
+                )
+
 
                 """
                 ====
@@ -291,6 +336,92 @@ class DwdCdcKnowledge(object):
                     ("wind_quality_level", "int"),   # Quality level
                     ("wind_speed", "real"),         # Mean wind speed
                     ("wind_direction", "int"),      # Mean wind direction
+                )
+
+
+                """
+                ==========
+                Cloudiness
+                ==========
+
+                Documentation
+                -------------
+
+                - Recent
+
+                    - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
+                    - Temporal resolution:  several times a day
+                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/cloudiness/recent/DESCRIPTION_obsgermany_climate_hourly_cloudiness_recent_en.pdf
+
+                - Historical
+
+                    - Temporal coverage:    01.01.1949 - 31.12.2016
+                    - Temporal resolution:  several times a day
+                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/cloudiness/historical/DESCRIPTION_obsgermany_climate_hourly_cloudiness_historical_en.pdf
+
+                Fields
+                ------
+                ::
+
+                    Field               Description                     Format or unit
+                    STATIONS_ID         Station identification number   Integer
+                    MESS_DATUM          Measurement time                YYYYMMDDHH
+                    QN_8                Quality level                   Integer: 1-10 and -999, for coding see paragraph "Quality information" in PDF.
+                    V_N_I               How measurement is taken        P: by human person
+                                                                        I: by instrument
+                    V_N                 Total cloud cover               1/8
+                    eor                 End of record, can be ignored
+
+                Missing values are marked as -999. All dates given are in UTC.
+
+                """
+                cloudiness = (
+                    ("cloudiness_quality_level", "int"),    # Quality level
+                    ("cloudiness_source", "str"),           # How measurement is taken
+                    ("cloudiness_total_cover", "int"),      # Total cloud cover
+                )
+
+
+                """
+                ==========
+                Visibility
+                ==========
+
+                Documentation
+                -------------
+
+                - Recent
+
+                    - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
+                    - Temporal resolution:  several times a day
+                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/visibility/recent/DESCRIPTION_obsgermany_climate_hourly_visibility_recent_en.pdf
+
+                - Historical
+
+                    - Temporal coverage:    01.01.1949 - 31.12.2016
+                    - Temporal resolution:  several times a day
+                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/visibility/historical/DESCRIPTION_obsgermany_climate_hourly_visibility_historical_en.pdf
+
+                Fields
+                ------
+                ::
+
+                    Field               Description                     Format or unit
+                    STATIONS_ID         Station identification number   Integer
+                    MESS_DATUM          Measurement time                YYYYMMDDHH
+                    QN_8                Quality level                   Integer: 1-10 and -999, for coding see paragraph "Quality information" in PDF.
+                    V_VV_I              How measurement is taken        P: by human person
+                                                                        I: by instrument
+                    V_VV                Visibility                      m
+                    eor                 End of record, can be ignored
+
+                Missing values are marked as -999. All dates given are in UTC.
+
+                """
+                visibility = (
+                    ("visibility_quality_level", "int"),    # Quality level
+                    ("visibility_source", "str"),           # How measurement is taken
+                    ("visibility_value", "int"),            # Visibility
                 )
 
 

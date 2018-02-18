@@ -132,6 +132,7 @@ Only used unter Python 2.7.5. Use at your own risk.
   * Adapt to changes on upstream server ftp-cdc.dwd.de
   * Add "--reset-cache" option for dropping the cache database before performing any work
   * Add "--categories" option for specifying list of comma-separated category names to import
+  * Add acquisition categories "pressure", "cloudiness" and "visibility"
 
 * *Version 0.7*:
   * Adapted to match modified Schema for sun data
