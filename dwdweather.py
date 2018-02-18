@@ -29,6 +29,318 @@ See here for details.
 
 """
 
+class DwdCdcKnowledge(object):
+    """
+    Knowledge about the data layout on the Climate Data Centers (CDC) FTP server provided by the DWD.
+    """
+
+    class climate:
+
+        # The different measurements for climate data
+        measurements = [
+            {'key': 'TU', 'name': 'air_temperature'},
+            {'key': 'EB', 'name': 'soil_temperature'},
+            {'key': 'RR', 'name': 'precipitation'},
+            {'key': 'FF', 'name': 'wind'},
+            {'key': 'SD', 'name': 'sun'},
+            {'key': 'ST', 'name': 'solar'},
+        ]
+
+        # The different resolutions for climate data
+        class resolutions:
+
+            class minutes_10:
+                path = '10_minutes'
+
+
+            # Temporal resolution: hourly
+            class hourly:
+
+                """
+                ===============
+                Air temperature
+                ===============
+
+                Documentation:
+
+                    - Recent
+
+                        - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
+                        - Temporal resolution:  hourly
+                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/air_temperature/recent/DESCRIPTION_obsgermany_climate_hourly_tu_recent_en.pdf
+
+                    - Historical
+
+                        - Temporal coverage:    01.01.1893 - 31.12.2016
+                        - Temporal resolution:  hourly
+                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/air_temperature/historical/DESCRIPTION_obsgermany_climate_hourly_tu_historical_en.pdf
+
+                Fields::
+
+                    Field               Description                     Format or unit
+                    STATIONS_ID         Station identification number   Integer
+                    MESS_DATUM          Measurement time                YYYYMMDDHH
+                    QN_9                Quality level                   Integer: 1-10 and -999, for coding see paragraph "Quality information" in PDF.
+                    TT_TU               Air temperature 2m              °C
+                    RF_TU               Relative humidity 2m            %
+                    eor                 End of record, can be ignored
+
+                    Missing values are marked as -999. All dates given are in UTC.
+                """
+                air_temperature = (
+                    ("temphum_quality_level", "int"),   # Quality level
+                    ("temphum_temperature", "real"),    # Air temperature 2m
+                    ("temphum_humidity", "real"),       # Relative humidity 2m
+                )
+
+
+                """
+                ================
+                Soil temperature
+                ================
+
+                Documentation:
+
+                    - Recent
+
+                        - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
+                        - Temporal resolution:  several times a day
+                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/soil_temperature/recent/DESCRIPTION_obsgermany_climate_hourly_soil_temperature_recent_en.pdf
+
+                    - Historical
+
+                        - Temporal coverage:    01.01.1949 - 31.12.2016
+                        - Temporal resolution:  several times a day
+                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/soil_temperature/historical/DESCRIPTION_obsgermany_climate_hourly_soil_temperature_historical_en.pdf
+
+                Fields::
+
+                    Field               Description                     Format or unit
+                    STATIONS_ID         Station identification number   Integer
+                    MESS_DATUM          Measurement time                YYYYMMDDHH
+                    QN_2                Quality level                   Integer: 1-10 and -999, for coding see paragraph "Quality information" in PDF.
+                    V_TE002             Soil temperature in 2 cm depth  °C
+                    V_TE005             Soil temperature in 5 cm depth  °C
+                    V_TE010             Soil temperature in 10 cm depth °C
+                    V_TE020             Soil temperature in 20 cm depth °C
+                    V_TE050             Soil temperature in 50 cm depth °C
+                    V_TE100             Soil temperature in 100 cm depth °C
+                    eor                 End of record, can be ignored
+
+                    Missing values are marked as -999. All dates given are in UTC.
+                """
+                soil_temperature = (
+                    ("soiltemp_quality_level", "int"),      # Quality level
+                    ("soiltemp_temperature_002", "real"),   # Soil temperature 2cm
+                    ("soiltemp_temperature_005", "real"),   # Soil temperature 5cm
+                    ("soiltemp_temperature_010", "real"),   # Soil temperature 10cm
+                    ("soiltemp_temperature_020", "real"),   # Soil temperature 20cm
+                    ("soiltemp_temperature_050", "real"),   # Soil temperature 50cm
+                    ("soiltemp_temperature_100", "real"),   # Soil temperature 100cm
+                )
+
+
+                """
+                =============
+                Precipitation
+                =============
+
+                Documentation:
+
+                    - Recent
+
+                        - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
+                        - Temporal resolution:  hourly
+                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/precipitation/recent/DESCRIPTION_obsgermany_climate_hourly_precipitation_recent_en.pdf
+
+                    - Historical
+
+                        - Temporal coverage:    01.09.1995 - 31.12.2016
+                        - Temporal resolution:  hourly
+                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/precipitation/historical/DESCRIPTION_obsgermany_climate_hourly_precipitation_historical_en.pdf
+
+                Fields::
+
+                    Field               Description                     Format or unit
+                    STATIONS_ID         Station identification number   Integer
+                    MESS_DATUM          Measurement time                YYYYMMDDHH
+                    QN_8                Quality level                   Integer: 1-10 and -999, for coding see paragraph "Quality information" in PDF.
+                    R1                  Hourly precipitation height     mm
+                    RS_IND              Precipitation indicator         0 no precipitation
+                                                                        1 precipitation has fallen
+                    WRTR                Form of precipitation           WR-code
+                    eor                 End of record, can be ignored
+
+                    Missing values are marked as -999. All dates given are in UTC.
+
+                    The WRTR form of precipitation is only given at certain times, in accordance with SYNOP definition.
+                    Refer to daily values for more information on precipitation type. The classification of precipitation type in the
+                    daily values differs from the classification for the hourly values.
+
+                    For the hourly values, the W_R definition (see Table 55, VUB 2 Band D, 2013) is used:
+                    0   No fallen precipitation or too little deposition
+                        (e.g., dew or frost) to form a precipitation height larger than 0.0
+                    1   Precipitation height only due to deposition
+                        (dew or frost) or if it cannot decided how large the part from deposition is
+                    2   Precipitation height only due to liquid deposition
+                    3   Precipitation height only due to solid precipitation
+                    6   Precipitation height due to fallen liquid precipitation, may also include deposition of any kind
+                    7   Precipitation height due to fallen solid precipitation, may also include deposition of any kind
+                    8   Fallen precipitation in liquid and solid form
+                    9   No precipitation measurement, form of precipitation cannot be determined.
+                """
+                precipitation = (
+                    ("precipitation_quality_level", "int"),      # Quality level
+                    ("precipitation_height", "real"),
+                    ("precipitation_fallen", "bool"),
+                    ("precipitation_form", "int"),
+                )
+
+
+                """
+                ===
+                Sun
+                ===
+
+                Documentation:
+
+                    - Recent
+
+                        - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
+                        - Temporal resolution:  hourly
+                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/sun/recent/DESCRIPTION_obsgermany_climate_hourly_sun_recent_en.pdf
+
+                    - Historical
+
+                        - Temporal coverage:    01.01.1893 - 31.12.2016
+                        - Temporal resolution:  hourly
+                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/sun/historical/DESCRIPTION_obsgermany_climate_hourly_sun_historical_en.pdf
+
+                Fields::
+
+                    Field               Description                     Format or unit
+                    STATIONS_ID         Station identification number   Integer
+                    MESS_DATUM          Measurement time                YYYYMMDDHH
+                    QN_7                Quality level                   Integer: 1-10 and -999, for coding see paragraph "Quality information" in PDF.
+                    SD_SO               Hourly sunshine duration        min
+                    eor                 End of record, can be ignored
+
+                    Missing values are marked as -999. All dates given are in UTC.
+
+                """
+                sun = (
+                    ("sun_quality_level", "int"),   # Quality level
+                    ("sun_duration", "real"),       # Hourly sunshine duration
+                    )
+
+
+                """
+                ====
+                Wind
+                ====
+
+                Documentation:
+
+                    - Recent
+
+                        - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
+                        - Temporal resolution:  hourly
+                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/wind/recent/DESCRIPTION_obsgermany_climate_hourly_wind_recent_en.pdf
+
+                    - Historical
+
+                        - Temporal coverage:    01.01.1893 - 31.12.2016
+                        - Temporal resolution:  hourly
+                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/wind/historical/DESCRIPTION_obsgermany_climate_hourly_wind_historical_en.pdf
+
+                Fields::
+
+                    Field               Description                     Format or unit
+                    STATIONS_ID         Station identification number   Integer
+                    MESS_DATUM          Measurement time                YYYYMMDDHH
+                    QN_3                Quality level                   Integer: 1-10 and -999, for coding see paragraph "Quality information" in PDF.
+                    F                   Mean wind speed                 m/s
+                    D                   Mean wind direction             degrees
+                    eor                 End of record, can be ignored
+
+                    Missing values are marked as -999. All dates given are in UTC.
+
+                    Nowadays, hourly wind speed and wind direction is given as the average of
+                    the six 10min intervals measured in the previous hour
+                    (e.g., at UTC 11, the average windspeed and average wind direction during UTC10-UTC11 is given).
+
+                """
+                wind = (
+                    ("wind_quality_level", "int"),   # Quality level
+                    ("wind_speed", "real"),         # Mean wind speed
+                    ("wind_direction", "int"),      # Mean wind direction
+                )
+
+
+                """
+                =====
+                Solar
+                =====
+
+                Documentation:
+
+                    - Temporal coverage:    01.01.1937 - month before last month
+                    - Temporal resolution:  hourly
+                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/solar/DESCRIPTION_obsgermany_climate_hourly_solar_en.pdf
+
+                Fields::
+
+                    Field               Description                     Format or unit
+                    STATIONS_ID         Station identification number   Integer
+                    MESS_DATUM          Measurement time                YYYYMMDDHH
+                    QN_592              Quality level                   Integer: 1-10 and -999, for coding see paragraph "Quality information" in PDF.
+                    ATMO_LBERG          Hourly sum of longwave          J/cm^2
+                                        downward radiation
+                    FD_LBERG            Hourly sum of diffuse           J/cm^2
+                                        solar radiation
+                    FG_LBERG            Hourly sum of solar             J/cm^2
+                                        incoming radiation
+                    SD_LBERG            Hourly sum of                   min
+                                        sunshine duration
+                    ZENIT               Solar zenith angle at mid       degree
+                                        of interval
+                    MESS_DATUM_WOZ      End of interval in local        YYYYMMDDHH:mm
+                                        true solar time
+                    eor                 End of record, can be ignored
+
+                    Missing values are marked as -999. All dates given are in UTC.
+
+                """
+                solar = (
+                    ("solar_quality_level", "int"),     # Qualitaets_Niveau
+                    ("solar_duration", "int"),          # Hourly sum of longwave downward radiation
+                    ("solar_sky", "real"),              # Hourly sum of diffuse solar radiation
+                    ("solar_global", "real"),           # Hourly sum of solar incoming radiation
+                    ("solar_atmosphere", "real"),       # Hourly sum of sunshine duration
+                    ("solar_zenith", "real"),           # Solar zenith angle at mid of interval
+                    ("solar_end_of_interval", "datetime"),  # End of interval in local true solar time
+                )
+
+
+            """
+            Quality information
+            The quality level "Qualitätsniveau" (QN) given here applies
+            to the respective columns and describes the method of quality control.
+
+            quality level (column header: QN_2)
+             1 only formal control
+             2 controlled with individually defined criteria
+             3 automatic control and correction
+             5 historic, subjective procedures
+             7 second control done, before correction
+             8 quality control outside ROUTINE
+             9 not all parameters corrected
+            10 quality control finished, all corrections finished
+
+            Erroneous or suspicious values are identified and set to -999.
+            """
+
+
 class DwdWeather(object):
 
     # DWD FTP server host name
@@ -40,65 +352,19 @@ class DwdWeather(object):
     # database Field definition:
     # key = internal field name
     # value = (sqlite type, value category, source column name)
-    fields = {
-        "air_temperature": (
-            ("temphum_quality_level", "int"),  # Qualitaets_Niveau
-            ("temphum_structure_version", "int"),  # Struktur_Version
-            ("temphum_temperature", "real"),  # LUFTTEMPERATUR
-            ("temphum_humidity", "real"),  # REL_FEUCHTE
-        ),
-        "precipitation": (
-            ("precipitation_quality_level", "int"),  # Qualitaets_Niveau
-            ("precipitation_fallen", "int"),  # NIEDERSCHLAG_GEFALLEN_IND
-            ("precipitation_height", "real"),  # NIEDERSCHLAGSHOEHE
-            ("precipitation_form", "int"),  # NIEDERSCHLAGSFORM
-        ),
-        "soil_temperature": (
-            ("soiltemp_quality_level", "int"),  # Qualitaets_Niveau
-            ("soiltemp_1_temperature", "real"),  # ERDBODENTEMPERATUR
-            ("soiltemp_1_depth", "real"),  # MESS_TIEFE
-            ("soiltemp_2_temperature", "real"),  # ERDBODENTEMPERATUR
-            ("soiltemp_2_depth", "real"),  # MESS_TIEFE
-            ("soiltemp_3_temperature", "real"),  # ERDBODENTEMPERATUR
-            ("soiltemp_3_depth", "real"),  # MESS_TIEFE
-            ("soiltemp_4_temperature", "real"),  # ERDBODENTEMPERATUR
-            ("soiltemp_4_depth", "real"),  # MESS_TIEFE
-            ("soiltemp_5_temperature", "real"),  # ERDBODENTEMPERATUR
-            ("soiltemp_5_depth", "real"),  # MESS_TIEFE
-        ),
-        "solar": (
-            ("solar_quality_level", "int"),  # Qualitaets_Niveau
-            ("solar_duration", "int"),  # SONNENSCHEINDAUER
-            ("solar_sky", "real"),  # DIFFUS_HIMMEL_KW_J
-            ("solar_global", "real"),  # GLOBAL_KW_J
-            ("solar_atmosphere", "real"),  # ATMOSPHAERE_LW_J
-            ("solar_zenith", "real"),  # SONNENZENIT
-            #("solar_TODO", "int"),  # MESS_DATUM_WOZ
-        ),
-        "sun": (
-            ("sun_quality_level", "int"),  # Qualitaets_Niveau
-            ("sun_structure_version", "int"),  # Struktur_Version
-            ("sun_duration", "real"),  # STUNDENSUMME_SONNENSCHEIN
-        ),
-        "wind": (
-            ("wind_quality_level", "int"),  # Qualitaets_Niveau
-            ("wind_structure_version", "int"),  # Struktur_Version
-            ("wind_speed", "real"),  # WINDGESCHWINDIGKEIT
-            ("wind_direction", "int"),  # WINDRICHTUNG
-        )
-    }
+    knowledge = DwdCdcKnowledge.climate.resolutions.hourly
+    fields = {}
+    for entry in dir(knowledge):
+        if entry.startswith('__'): continue
+        fields[entry] = getattr(knowledge, entry)
 
     # Categories of measurements on the server
     # key=<category (folder name)> , value=<file name code>
-    categories = {
-        "precipitation": "RR",
-        "soil_temperature": "EB",
-        "solar": "ST",
-        "sun": "SD",
-        "air_temperature": "TU",
-        "wind": "FF"
-    }
-
+    categories = {}
+    for item in DwdCdcKnowledge.climate.measurements:
+        key = item['key']
+        name = item['name']
+        categories[name] = key
 
     def __init__(self, **kwargs):
         """
@@ -294,10 +560,15 @@ class DwdWeather(object):
         CSV -> Sqilte import function.
         """
         if self.verbosity > 0:
+            station_info = self.station_info(station_id)
             print
             print("=" * 42)
             print("Importing measurements for station %d" % station_id)
             print("=" * 42)
+            if station_info:
+                print(json.dumps(station_info, indent=2, sort_keys=True))
+                print("=" * 42)
+
         # Which files to import
         timeranges = []
         if latest:
@@ -318,8 +589,9 @@ class DwdWeather(object):
             ftp.retrbinary('RETR ' + filename, open(output_path, 'wb').write)
             with ZipFile(output_path) as myzip:
                 for f in myzip.infolist():
-                    if "Terminwerte" in f.filename:
-                        # this is our data file
+
+                    # This is the data file
+                    if f.filename.startswith('produkt_'):
                         if self.verbosity > 1:
                             print("Reading from Zip: %s" % (f.filename))
                         myzip.extract(f, self.cachepath + os.sep)
@@ -342,7 +614,7 @@ class DwdWeather(object):
                 ftp.retrlines('NLST', serverfiles.append)
                 filename = None
                 for fn in serverfiles:
-                    if ("_%05d." % station_id) in fn:
+                    if ("_%05d_" % station_id) in fn:
                         filename = fn
                         break
                 if filename is None:
@@ -450,7 +722,12 @@ class DwdWeather(object):
                             (t, val, trace) = sys.exc_info()
                             traceback.print_tb(trace)
                             sys.exit()
+                    elif fieldtype == "datetime":
+                        if ":" in parts[n]:
+                            parts[n] = parts[n].split(":")[0]
+
                     dataset.append(parts[n])
+
                 # station_id and datetime for WHERE clause
                 dataset.append(parts[0])
                 dataset.append(parts[1])
@@ -529,6 +806,12 @@ class DwdWeather(object):
             self.import_stations()
             out = self.stations()
         return out
+
+    def station_info(self, station_id):
+        sql = "SELECT * FROM stations WHERE station_id=?"
+        c = self.db.cursor()
+        c.execute(sql, (station_id,))
+        return c.fetchone()
 
     def nearest_station(self, lon, lat):
         # select most current stations datasets
@@ -616,7 +899,7 @@ def main():
     def get_weather(args):
         hour = datetime.strptime(str(args.hour), "%Y%m%d%H")
         dw = DwdWeather(cachepath=args.cachepath, verbosity=args.verbosity)
-        print json.dumps(dw.query(args.station_id, hour), indent=4)
+        print json.dumps(dw.query(args.station_id, hour), indent=4, sort_keys=True)
 
     argparser = argparse.ArgumentParser(prog="dwdweather",
         description="Get weather information for Germany.")
