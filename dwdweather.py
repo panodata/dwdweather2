@@ -61,21 +61,24 @@ class DwdCdcKnowledge(object):
                 Air temperature
                 ===============
 
-                Documentation:
+                Documentation
+                -------------
 
-                    - Recent
+                - Recent
 
-                        - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
-                        - Temporal resolution:  hourly
-                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/air_temperature/recent/DESCRIPTION_obsgermany_climate_hourly_tu_recent_en.pdf
+                    - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
+                    - Temporal resolution:  hourly
+                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/air_temperature/recent/DESCRIPTION_obsgermany_climate_hourly_tu_recent_en.pdf
 
-                    - Historical
+                - Historical
 
-                        - Temporal coverage:    01.01.1893 - 31.12.2016
-                        - Temporal resolution:  hourly
-                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/air_temperature/historical/DESCRIPTION_obsgermany_climate_hourly_tu_historical_en.pdf
+                    - Temporal coverage:    01.01.1893 - 31.12.2016
+                    - Temporal resolution:  hourly
+                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/air_temperature/historical/DESCRIPTION_obsgermany_climate_hourly_tu_historical_en.pdf
 
-                Fields::
+                Fields
+                ------
+                ::
 
                     Field               Description                     Format or unit
                     STATIONS_ID         Station identification number   Integer
@@ -85,7 +88,7 @@ class DwdCdcKnowledge(object):
                     RF_TU               Relative humidity 2m            %
                     eor                 End of record, can be ignored
 
-                    Missing values are marked as -999. All dates given are in UTC.
+                Missing values are marked as -999. All dates given are in UTC.
                 """
                 air_temperature = (
                     ("temphum_quality_level", "int"),   # Quality level
@@ -99,21 +102,24 @@ class DwdCdcKnowledge(object):
                 Soil temperature
                 ================
 
-                Documentation:
+                Documentation
+                -------------
 
-                    - Recent
+                - Recent
 
-                        - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
-                        - Temporal resolution:  several times a day
-                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/soil_temperature/recent/DESCRIPTION_obsgermany_climate_hourly_soil_temperature_recent_en.pdf
+                    - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
+                    - Temporal resolution:  several times a day
+                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/soil_temperature/recent/DESCRIPTION_obsgermany_climate_hourly_soil_temperature_recent_en.pdf
 
-                    - Historical
+                - Historical
 
-                        - Temporal coverage:    01.01.1949 - 31.12.2016
-                        - Temporal resolution:  several times a day
-                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/soil_temperature/historical/DESCRIPTION_obsgermany_climate_hourly_soil_temperature_historical_en.pdf
+                    - Temporal coverage:    01.01.1949 - 31.12.2016
+                    - Temporal resolution:  several times a day
+                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/soil_temperature/historical/DESCRIPTION_obsgermany_climate_hourly_soil_temperature_historical_en.pdf
 
-                Fields::
+                Fields
+                ------
+                ::
 
                     Field               Description                     Format or unit
                     STATIONS_ID         Station identification number   Integer
@@ -127,7 +133,7 @@ class DwdCdcKnowledge(object):
                     V_TE100             Soil temperature in 100 cm depth °C
                     eor                 End of record, can be ignored
 
-                    Missing values are marked as -999. All dates given are in UTC.
+                Missing values are marked as -999. All dates given are in UTC.
                 """
                 soil_temperature = (
                     ("soiltemp_quality_level", "int"),      # Quality level
@@ -145,21 +151,24 @@ class DwdCdcKnowledge(object):
                 Precipitation
                 =============
 
-                Documentation:
+                Documentation
+                -------------
 
-                    - Recent
+                - Recent
 
-                        - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
-                        - Temporal resolution:  hourly
-                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/precipitation/recent/DESCRIPTION_obsgermany_climate_hourly_precipitation_recent_en.pdf
+                    - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
+                    - Temporal resolution:  hourly
+                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/precipitation/recent/DESCRIPTION_obsgermany_climate_hourly_precipitation_recent_en.pdf
 
-                    - Historical
+                - Historical
 
-                        - Temporal coverage:    01.09.1995 - 31.12.2016
-                        - Temporal resolution:  hourly
-                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/precipitation/historical/DESCRIPTION_obsgermany_climate_hourly_precipitation_historical_en.pdf
+                    - Temporal coverage:    01.09.1995 - 31.12.2016
+                    - Temporal resolution:  hourly
+                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/precipitation/historical/DESCRIPTION_obsgermany_climate_hourly_precipitation_historical_en.pdf
 
-                Fields::
+                Fields
+                ------
+                ::
 
                     Field               Description                     Format or unit
                     STATIONS_ID         Station identification number   Integer
@@ -171,13 +180,14 @@ class DwdCdcKnowledge(object):
                     WRTR                Form of precipitation           WR-code
                     eor                 End of record, can be ignored
 
-                    Missing values are marked as -999. All dates given are in UTC.
+                Missing values are marked as -999. All dates given are in UTC.
 
-                    The WRTR form of precipitation is only given at certain times, in accordance with SYNOP definition.
-                    Refer to daily values for more information on precipitation type. The classification of precipitation type in the
-                    daily values differs from the classification for the hourly values.
+                The WRTR form of precipitation is only given at certain times, in accordance with SYNOP definition.
+                Refer to daily values for more information on precipitation type. The classification of precipitation type in the
+                daily values differs from the classification for the hourly values.
 
-                    For the hourly values, the W_R definition (see Table 55, VUB 2 Band D, 2013) is used:
+                For the hourly values, the W_R definition (see Table 55, VUB 2 Band D, 2013) is used::
+
                     0   No fallen precipitation or too little deposition
                         (e.g., dew or frost) to form a precipitation height larger than 0.0
                     1   Precipitation height only due to deposition
@@ -202,21 +212,24 @@ class DwdCdcKnowledge(object):
                 Sun
                 ===
 
-                Documentation:
+                Documentation
+                -------------
 
-                    - Recent
+                - Recent
 
-                        - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
-                        - Temporal resolution:  hourly
-                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/sun/recent/DESCRIPTION_obsgermany_climate_hourly_sun_recent_en.pdf
+                    - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
+                    - Temporal resolution:  hourly
+                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/sun/recent/DESCRIPTION_obsgermany_climate_hourly_sun_recent_en.pdf
 
-                    - Historical
+                - Historical
 
-                        - Temporal coverage:    01.01.1893 - 31.12.2016
-                        - Temporal resolution:  hourly
-                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/sun/historical/DESCRIPTION_obsgermany_climate_hourly_sun_historical_en.pdf
+                    - Temporal coverage:    01.01.1893 - 31.12.2016
+                    - Temporal resolution:  hourly
+                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/sun/historical/DESCRIPTION_obsgermany_climate_hourly_sun_historical_en.pdf
 
-                Fields::
+                Fields
+                ------
+                ::
 
                     Field               Description                     Format or unit
                     STATIONS_ID         Station identification number   Integer
@@ -225,13 +238,13 @@ class DwdCdcKnowledge(object):
                     SD_SO               Hourly sunshine duration        min
                     eor                 End of record, can be ignored
 
-                    Missing values are marked as -999. All dates given are in UTC.
-
+                Missing values are marked as -999. All dates given are in UTC.
                 """
                 sun = (
                     ("sun_quality_level", "int"),   # Quality level
                     ("sun_duration", "real"),       # Hourly sunshine duration
-                    )
+                )
+
 
 
                 """
@@ -239,21 +252,24 @@ class DwdCdcKnowledge(object):
                 Wind
                 ====
 
-                Documentation:
+                Documentation
+                -------------
 
-                    - Recent
+                - Recent
 
-                        - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
-                        - Temporal resolution:  hourly
-                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/wind/recent/DESCRIPTION_obsgermany_climate_hourly_wind_recent_en.pdf
+                    - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
+                    - Temporal resolution:  hourly
+                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/wind/recent/DESCRIPTION_obsgermany_climate_hourly_wind_recent_en.pdf
 
-                    - Historical
+                - Historical
 
-                        - Temporal coverage:    01.01.1893 - 31.12.2016
-                        - Temporal resolution:  hourly
-                        - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/wind/historical/DESCRIPTION_obsgermany_climate_hourly_wind_historical_en.pdf
+                    - Temporal coverage:    01.01.1893 - 31.12.2016
+                    - Temporal resolution:  hourly
+                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/wind/historical/DESCRIPTION_obsgermany_climate_hourly_wind_historical_en.pdf
 
-                Fields::
+                Fields
+                ------
+                ::
 
                     Field               Description                     Format or unit
                     STATIONS_ID         Station identification number   Integer
@@ -263,11 +279,11 @@ class DwdCdcKnowledge(object):
                     D                   Mean wind direction             degrees
                     eor                 End of record, can be ignored
 
-                    Missing values are marked as -999. All dates given are in UTC.
+                Missing values are marked as -999. All dates given are in UTC.
 
-                    Nowadays, hourly wind speed and wind direction is given as the average of
-                    the six 10min intervals measured in the previous hour
-                    (e.g., at UTC 11, the average windspeed and average wind direction during UTC10-UTC11 is given).
+                Nowadays, hourly wind speed and wind direction is given as the average of
+                the six 10min intervals measured in the previous hour
+                (e.g., at UTC 11, the average windspeed and average wind direction during UTC10-UTC11 is given).
 
                 """
                 wind = (
@@ -282,13 +298,16 @@ class DwdCdcKnowledge(object):
                 Solar
                 =====
 
-                Documentation:
+                Documentation
+                -------------
 
-                    - Temporal coverage:    01.01.1937 - month before last month
-                    - Temporal resolution:  hourly
-                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/solar/DESCRIPTION_obsgermany_climate_hourly_solar_en.pdf
+                - Temporal coverage:    01.01.1937 - month before last month
+                - Temporal resolution:  hourly
+                - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/solar/DESCRIPTION_obsgermany_climate_hourly_solar_en.pdf
 
-                Fields::
+                Fields
+                ------
+                ::
 
                     Field               Description                     Format or unit
                     STATIONS_ID         Station identification number   Integer
@@ -308,7 +327,7 @@ class DwdCdcKnowledge(object):
                                         true solar time
                     eor                 End of record, can be ignored
 
-                    Missing values are marked as -999. All dates given are in UTC.
+                Missing values are marked as -999. All dates given are in UTC.
 
                 """
                 solar = (
@@ -327,15 +346,16 @@ class DwdCdcKnowledge(object):
             The quality level "Qualitätsniveau" (QN) given here applies
             to the respective columns and describes the method of quality control.
 
-            quality level (column header: QN_2)
-             1 only formal control
-             2 controlled with individually defined criteria
-             3 automatic control and correction
-             5 historic, subjective procedures
-             7 second control done, before correction
-             8 quality control outside ROUTINE
-             9 not all parameters corrected
-            10 quality control finished, all corrections finished
+            Quality level (column header: QN_X)::
+
+                 1 only formal control
+                 2 controlled with individually defined criteria
+                 3 automatic control and correction
+                 5 historic, subjective procedures
+                 7 second control done, before correction
+                 8 quality control outside ROUTINE
+                 9 not all parameters corrected
+                10 quality control finished, all corrections finished
 
             Erroneous or suspicious values are identified and set to -999.
             """
@@ -349,7 +369,7 @@ class DwdWeather(object):
     # FTP server path for our files
     serverpath = "/pub/CDC/observations_germany/climate/hourly"
 
-    # database Field definition:
+    # Database field definition:
     # key = internal field name
     # value = (sqlite type, value category, source column name)
     knowledge = DwdCdcKnowledge.climate.resolutions.hourly
@@ -557,13 +577,13 @@ class DwdWeather(object):
         We download ZIP files for several categories
         of measures. We then extract one file from
         each ZIP. This path is then handed to the
-        CSV -> Sqilte import function.
+        CSV -> Sqlite import function.
         """
         if self.verbosity > 0:
             station_info = self.station_info(station_id)
             print
             print("=" * 42)
-            print("Importing measurements for station %d" % station_id)
+            print("Downloading measurements for station %d" % station_id)
             print("=" * 42)
             if station_info:
                 print(json.dumps(station_info, indent=2, sort_keys=True))
