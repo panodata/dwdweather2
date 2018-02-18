@@ -97,9 +97,9 @@ class DwdCdcKnowledge(object):
                 Missing values are marked as -999. All dates given are in UTC.
                 """
                 air_temperature = (
-                    ("temphum_quality_level", "int"),   # Quality level
-                    ("temphum_temperature", "real"),    # Air temperature 2m
-                    ("temphum_humidity", "real"),       # Relative humidity 2m
+                    ("airtemp_quality_level", "int"),   # Quality level
+                    ("airtemp_temperature", "real"),    # Air temperature 2m
+                    ("airtemp_humidity", "real"),       # Relative humidity 2m
                 )
 
 
@@ -131,11 +131,11 @@ class DwdCdcKnowledge(object):
                     STATIONS_ID         Station identification number   Integer
                     MESS_DATUM          Measurement time                YYYYMMDDHH
                     QN_2                Quality level                   Integer: 1-10 and -999, for coding see paragraph "Quality information" in PDF.
-                    V_TE002             Soil temperature in 2 cm depth  °C
-                    V_TE005             Soil temperature in 5 cm depth  °C
-                    V_TE010             Soil temperature in 10 cm depth °C
-                    V_TE020             Soil temperature in 20 cm depth °C
-                    V_TE050             Soil temperature in 50 cm depth °C
+                    V_TE002             Soil temperature in   2 cm depth  °C
+                    V_TE005             Soil temperature in   5 cm depth  °C
+                    V_TE010             Soil temperature in  10 cm depth °C
+                    V_TE020             Soil temperature in  20 cm depth °C
+                    V_TE050             Soil temperature in  50 cm depth °C
                     V_TE100             Soil temperature in 100 cm depth °C
                     eor                 End of record, can be ignored
 
@@ -291,7 +291,7 @@ class DwdCdcKnowledge(object):
                 pressure = (
                     ("pressure_quality_level", "int"),  # Quality level
                     ("pressure_normalized", "real"),    # Mean sea level pressure
-                    ("pressure_upstream", "real"),      # Pressure at station height
+                    ("pressure_station", "real"),       # Pressure at station height
                 )
 
 
