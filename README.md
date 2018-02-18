@@ -102,7 +102,7 @@ Get weather at station for certain hour (UTC):
 
 ### License (Code)
 
-Licensed under the MTI license. See file LICENSE for details.
+Licensed under the MIT license. See file LICENSE for details.
 
 ### Data license
 
@@ -114,6 +114,10 @@ This piece of software is in a very early stage. No test cases yet.
 Only used unter Python 2.7.5. Use at your own risk.
 
 ### Changelog
+
+* *In progress*:
+  * This and that: Fix console script entrypoint. Improve imports, debugging and inline comments.
+  * Adapt to changes on upstream server ftp-cdc.dwd.de
 
 * *Version 0.7*:
   * Adapted to match modified Schema for sun data
