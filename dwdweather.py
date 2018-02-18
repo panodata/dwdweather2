@@ -1,15 +1,18 @@
-# encoding: utf8
-
-import sys
+# -*- coding: utf-8 -*-
+# (c) 2014 Marian Steinbach, MIT licensed
 import os
-import os.path
+import re
+import sys
+import csv
+import json
+import math
+import sqlite3
+import argparse
+import StringIO
+import traceback
 from ftplib import FTP
 from zipfile import ZipFile
-import sqlite3
 from datetime import datetime
-import math
-import re
-import StringIO
 
 
 """
@@ -419,7 +422,6 @@ class DwdWeather(object):
                             sys.stderr.write("Error in converting field '%s', value '%s' to int.\n" % (
                                 fieldname, parts[n]))
                             (t, val, trace) = sys.exc_info()
-                            import traceback
                             traceback.print_tb(trace)
                             sys.exit()
                     dataset.append(parts[n])
@@ -531,14 +533,12 @@ class DwdWeather(object):
                     "coordinates": [station["geo_lon"], station["geo_lat"]]
                 }
             })
-        import json
         return json.dumps(out)
 
     def stations_csv(self, delimiter=","):
         """
         Return stations list as CSV
         """
-        import csv
         csvfile = StringIO.StringIO()
         # assemble field list
         headers = ["station_id", "date_start", "date_end",
@@ -569,7 +569,6 @@ def main():
 
     def get_station(args):
         dw = DwdWeather(cachepath=args.cachepath, verbosity=args.verbosity)
-        import json
         print json.dumps(dw.nearest_station(lon=args.lon, lat=args.lat), indent=4)
 
     def get_stations(args):
@@ -591,10 +590,8 @@ def main():
     def get_weather(args):
         hour = datetime.strptime(str(args.hour), "%Y%m%d%H")
         dw = DwdWeather(cachepath=args.cachepath, verbosity=args.verbosity)
-        import json
         print json.dumps(dw.query(args.station_id, hour), indent=4)
 
-    import argparse
     argparser = argparse.ArgumentParser(prog="dwdweather",
         description="Get weather information for Germany.")
     argparser.add_argument("-v", dest="verbosity", action="count",
