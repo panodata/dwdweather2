@@ -294,7 +294,10 @@ class DwdWeather(object):
         CSV -> Sqilte import function.
         """
         if self.verbosity > 0:
-            print("Importing measures for station %d from FTP server" % station_id)
+            print
+            print("=" * 42)
+            print("Importing measurements for station %d" % station_id)
+            print("=" * 42)
         # Which files to import
         timeranges = []
         if latest:
@@ -311,12 +314,14 @@ class DwdWeather(object):
                 timerange = "-"
             data_filename = "data_%s_%s_%s.txt" % (station_id, timerange, cat)
             if self.verbosity > 1:
-                print("Reading file %s/%s from FTP server" % (path, filename))
+                print("Reading from FTP: %s/%s" % (path, filename))
             ftp.retrbinary('RETR ' + filename, open(output_path, 'wb').write)
             with ZipFile(output_path) as myzip:
                 for f in myzip.infolist():
                     if "Terminwerte" in f.filename:
                         # this is our data file
+                        if self.verbosity > 1:
+                            print("Reading from Zip: %s" % (f.filename))
                         myzip.extract(f, self.cachepath + os.sep)
                         os.rename(self.cachepath + os.sep + f.filename,
                             self.cachepath + os.sep + data_filename)
@@ -325,7 +330,10 @@ class DwdWeather(object):
 
         for cat in self.categories.keys():
             if self.verbosity > 1:
-                print("Handling category %s" % cat)
+                print
+                print('-' * 42)
+                print("Downloading %s data" % cat.replace('_', ' '))
+                print('-' * 42)
             if cat == "solar":
                 path = "%s/%s" % (self.serverpath, cat)
                 ftp.cwd(path)
@@ -339,7 +347,7 @@ class DwdWeather(object):
                         break
                 if filename is None:
                     if self.verbosity > 1:
-                        print("Station %s has no data for category '%s'" % (station_id, cat))
+                        print("WARNING: Station %s has no data for category '%s'" % (station_id, cat))
                     continue
                 else:
                     download_and_import(path, filename, cat)
@@ -360,9 +368,18 @@ class DwdWeather(object):
                             break
                     if filename is None:
                         if self.verbosity > 1:
-                            print("Station %s has no data for category '%s'" % (station_id, cat))
+                            print("WARNING: Station %s has no data for category '%s'" % (station_id, cat))
                         continue
                     download_and_import(path, filename, cat, timerange)
+
+        if self.verbosity > 1:
+            print
+            print('-' * 42)
+            print("Importing files")
+            print('-' * 42)
+            if not importfiles:
+                print("WARNING: No files to import for station %s" % station_id)
+
         for item in importfiles:
             self.import_measures_textfile(item[0], item[1])
             os.remove(item[1])
@@ -372,17 +389,23 @@ class DwdWeather(object):
         """
         Import content of source text file into database
         """
+
+        if self.verbosity > 1:
+            print("Importing %s data from file %s" % (category, path))
+
         f = open(path, "rb")
         content = f.read()
         f.close()
         content = content.strip()
+
+        # Create SQL template
         sets = []
-        # create SQL template
         for fieldname, fieldtype in self.fields[category]:
             sets.append(fieldname + "=?")
-        insert_template = """INSERT OR IGNORE INTO measures (station_id, datetime) VALUES (?, ?)"""
+        insert_template = "INSERT OR IGNORE INTO measures (station_id, datetime) VALUES (?, ?)"
         update_template = "UPDATE measures SET %s WHERE station_id=? AND datetime=?" % ", ".join(sets)
-        # create data rows
+
+        # Create data rows
         insert_datasets = []
         update_datasets = []
         count = 0
@@ -397,12 +420,15 @@ class DwdWeather(object):
                 parts[n] = parts[n].strip()
             #print parts
             if count > 1:
-                # station id
+
+                # Parse station id
                 parts[0] = int(parts[0])
-                # timestamp
+
+                # Parse timestamp, ignore minutes
                 if ":" in parts[1]:
                     parts[1] = parts[1].split(":")[0]
                 parts[1] = int(parts[1])
+
                 insert_datasets.append([parts[0], parts[1]])
                 dataset = []
                 # station_id and datetime
