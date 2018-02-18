@@ -177,7 +177,7 @@ class DwdWeather(object):
         c.execute(index)
         self.db.commit()
         return home
-    
+
 
     def import_stations(self):
         """
@@ -206,7 +206,7 @@ class DwdWeather(object):
                 ftp.retrbinary('RETR ' + filename, f.write)
                 self.import_station(f.getvalue())
                 f.close()
-        
+
 
     def import_station(self, content):
         """
@@ -279,7 +279,7 @@ class DwdWeather(object):
         """
         Load data from DWD server.
         Parameter:
-        
+
         station_id: e.g. 2667 (Köln-Bonn airport)
 
         latest: Load most recent data (True, False)
@@ -612,7 +612,7 @@ if __name__ == "__main__":
                 raise argparse.ArgumentTypeError("%r not in range [%r, %r]"%(x,min,max))
             return x
         return check_range
-    
+
     # station options
     parser_station = subparsers.add_parser('station',
         help='Find a station')
@@ -631,7 +631,7 @@ if __name__ == "__main__":
         help="Export format")
     parser_stations.add_argument("-f", "--file", type=str, dest="output_path",
         help="Export file path. If not given, STDOUT is used.")
-    
+
     # weather options
     parser_weather = subparsers.add_parser('weather', help='Get weather data for a station and hour')
     parser_weather.set_defaults(func=get_weather)
