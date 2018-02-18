@@ -564,7 +564,8 @@ class DwdWeather(object):
         csvfile.close()
         return contents
 
-if __name__ == "__main__":
+
+def main():
 
     def get_station(args):
         dw = DwdWeather(cachepath=args.cachepath, verbosity=args.verbosity)
@@ -640,3 +641,7 @@ if __name__ == "__main__":
 
     args = argparser.parse_args()
     args.func(args)
+
+
+if __name__ == "__main__":
+    main()
