@@ -10,6 +10,7 @@ import sqlite3
 import argparse
 import StringIO
 import traceback
+from copy import deepcopy
 from ftplib import FTP
 from zipfile import ZipFile
 from datetime import datetime
@@ -40,10 +41,10 @@ class DwdCdcKnowledge(object):
         measurements = [
             {'key': 'TU', 'name': 'air_temperature'},
             {'key': 'EB', 'name': 'soil_temperature'},
-            {'key': 'RR', 'name': 'precipitation'},
-            {'key': 'FF', 'name': 'wind'},
             {'key': 'SD', 'name': 'sun'},
             {'key': 'ST', 'name': 'solar'},
+            {'key': 'RR', 'name': 'precipitation'},
+            {'key': 'FF', 'name': 'wind'},
         ]
 
         # The different resolutions for climate data
@@ -379,12 +380,7 @@ class DwdWeather(object):
         fields[entry] = getattr(knowledge, entry)
 
     # Categories of measurements on the server
-    # key=<category (folder name)> , value=<file name code>
-    categories = {}
-    for item in DwdCdcKnowledge.climate.measurements:
-        key = item['key']
-        name = item['name']
-        categories[name] = key
+    categories = DwdCdcKnowledge.climate.measurements
 
     def __init__(self, **kwargs):
         """
@@ -496,7 +492,8 @@ class DwdWeather(object):
             print("Importing stations data from FTP server")
         ftp = FTP(self.server)
         ftp.login(self.user, self.passwd)
-        for cat in self.categories:
+        for category in self.categories:
+            cat = category['name']
             if cat == "solar":
                 # workaround - solar has no subdirs
                 path = "%s/%s" % (self.serverpath, cat)
@@ -584,7 +581,7 @@ class DwdWeather(object):
 
 
 
-    def import_measures(self, station_id, latest=True, historic=False):
+    def import_measures(self, station_id, categories=None, latest=True, historic=False):
         """
         Load data from DWD server.
         Parameter:
@@ -599,6 +596,25 @@ class DwdWeather(object):
         each ZIP. This path is then handed to the
         CSV -> Sqlite import function.
         """
+
+        # Compute timerange labels / subfolder names
+        timeranges = []
+        if latest:
+            timeranges.append("recent")
+        if historic:
+            timeranges.append("historical")
+
+        # Restrict import to specified categories
+        categories_selected = deepcopy(self.categories)
+        if categories:
+            categories_selected = filter(lambda category: category['name'] in categories, categories_selected)
+
+        # Connect to FTP server
+        ftp = FTP(self.server)
+        ftp.login(self.user, self.passwd)
+
+
+        # Download data
         if self.verbosity > 0:
             station_info = self.station_info(station_id)
             print
@@ -609,17 +625,36 @@ class DwdWeather(object):
                 print(json.dumps(station_info, indent=2, sort_keys=True))
                 print("=" * 42)
 
-        # Which files to import
-        timeranges = []
-        if latest:
-            timeranges.append("recent")
-        if historic:
-            timeranges.append("historical")
-        ftp = FTP(self.server)
-        ftp.login(self.user, self.passwd)
+        importfiles = []
+        for category in categories_selected:
+            cat = category['name']
+            if self.verbosity > 1:
+                print
+                print('-' * 42)
+                print("Downloading %s data" % cat.replace('_', ' '))
+                print('-' * 42)
+
+            importfiles += self.download_measures(ftp, station_id, cat, timeranges)
+
+
+        # Import data
+        if self.verbosity > 1:
+            print
+            print("=" * 42)
+            print("Importing measurements for station %d" % station_id)
+            print("=" * 42)
+            if not importfiles:
+                print("WARNING: No files to import for station %s" % station_id)
+
+        for item in importfiles:
+            self.import_measures_textfile(item[0], item[1])
+            os.remove(item[1])
+
+    def download_measures(self, ftp, station_id, cat, timeranges):
+
         importfiles = []
 
-        def download_and_import(path, filename, cat, timerange=None):
+        def download(path, filename, cat, timerange=None):
             output_path = self.cachepath + os.sep + filename
             if timerange is None:
                 timerange = "-"
@@ -640,14 +675,28 @@ class DwdWeather(object):
                         importfiles.append([cat, self.cachepath + os.sep + data_filename])
             os.remove(output_path)
 
-        for cat in self.categories.keys():
-            if self.verbosity > 1:
-                print
-                print('-' * 42)
-                print("Downloading %s data" % cat.replace('_', ' '))
-                print('-' * 42)
-            if cat == "solar":
-                path = "%s/%s" % (self.serverpath, cat)
+        if cat == "solar":
+            path = "%s/%s" % (self.serverpath, cat)
+            ftp.cwd(path)
+            # list dir content, get right file name
+            serverfiles = []
+            ftp.retrlines('NLST', serverfiles.append)
+            filename = None
+            for fn in serverfiles:
+                if ("_%05d_" % station_id) in fn:
+                    filename = fn
+                    break
+            if filename is None:
+                if self.verbosity > 1:
+                    print("WARNING: Station %s has no data for category '%s'" % (station_id, cat))
+            else:
+                download(path, filename, cat)
+        else:
+            for timerange in timeranges:
+                timerange_suffix = "akt"
+                if timerange == "historical":
+                    timerange_suffix = "hist"
+                path = "%s/%s/%s" % (self.serverpath, cat, timerange)
                 ftp.cwd(path)
                 # list dir content, get right file name
                 serverfiles = []
@@ -660,41 +709,10 @@ class DwdWeather(object):
                 if filename is None:
                     if self.verbosity > 1:
                         print("WARNING: Station %s has no data for category '%s'" % (station_id, cat))
-                    continue
                 else:
-                    download_and_import(path, filename, cat)
-            else:
-                for timerange in timeranges:
-                    timerange_suffix = "akt"
-                    if timerange == "historical":
-                        timerange_suffix = "hist"
-                    path = "%s/%s/%s" % (self.serverpath, cat, timerange)
-                    ftp.cwd(path)
-                    # list dir content, get right file name
-                    serverfiles = []
-                    ftp.retrlines('NLST', serverfiles.append)
-                    filename = None
-                    for fn in serverfiles:
-                        if ("_%05d_" % station_id) in fn:
-                            filename = fn
-                            break
-                    if filename is None:
-                        if self.verbosity > 1:
-                            print("WARNING: Station %s has no data for category '%s'" % (station_id, cat))
-                        continue
-                    download_and_import(path, filename, cat, timerange)
+                    download(path, filename, cat, timerange)
 
-        if self.verbosity > 1:
-            print
-            print('-' * 42)
-            print("Importing files")
-            print('-' * 42)
-            if not importfiles:
-                print("WARNING: No files to import for station %s" % station_id)
-
-        for item in importfiles:
-            self.import_measures_textfile(item[0], item[1])
-            os.remove(item[1])
+        return importfiles
 
 
     def import_measures_textfile(self, category, path):
@@ -791,7 +809,7 @@ class DwdWeather(object):
             return datetime.utcnow() - latest
 
 
-    def query(self, station_id, hour, recursion=0):
+    def query(self, station_id, hour, categories=None, recursion=0):
         """
         Get values from cache.
         station_id: Numeric station ID
@@ -806,12 +824,12 @@ class DwdWeather(object):
                 # cache miss
                 age = (datetime.utcnow() - hour).total_seconds() / 86400
                 if age < 360:
-                    self.import_measures(station_id, latest=True)
+                    self.import_measures(station_id, categories=categories, latest=True)
                 elif age >= 360 and age <= 370:
-                    self.import_measures(station_id, latest=True, historic=True)
+                    self.import_measures(station_id, categories=categories, latest=True, historic=True)
                 else:
-                    self.import_measures(station_id, historic=True)
-                return self.query(station_id, hour, recursion=(recursion + 1))
+                    self.import_measures(station_id, categories=categories, historic=True)
+                return self.query(station_id, hour, categories=categories, recursion=(recursion + 1))
             c.close()
             return out
 
@@ -940,9 +958,15 @@ def main():
 
         # Workhorse
         dw = DwdWeather(cachepath=args.cachepath, reset_cache=args.reset_cache, verbosity=args.verbosity)
+
+        # Sanitize some input values
         hour = datetime.strptime(str(args.hour), "%Y%m%d%H")
-        dw = DwdWeather(cachepath=args.cachepath, verbosity=args.verbosity)
-        print json.dumps(dw.query(args.station_id, hour), indent=4, sort_keys=True)
+        categories = None
+        if args.categories:
+            categories = [cat.strip() for cat in args.categories.split(',')]
+
+        # Query data
+        print json.dumps(dw.query(args.station_id, hour, categories=categories), indent=4, sort_keys=True)
 
     argparser = argparse.ArgumentParser(prog="dwdweather",
         description="Get weather information for Germany.")
@@ -987,6 +1011,12 @@ def main():
     parser_weather.set_defaults(func=get_weather)
     parser_weather.add_argument("station_id", type=int, help="Numeric ID of the station, e.g. 2667")
     parser_weather.add_argument("hour", type=int, help="Time in the form of YYYYMMDDHH")
+
+    # "--categories" option for restricting import to specified category names
+    categories_available = ', '.join([item['name'] for item in DwdCdcKnowledge.climate.measurements])
+    parser_weather.add_argument("--categories", type=str,
+        help="List of comma-separated categories to import, choose from: %s.\n"
+             "The default setting is to import all categories per station." % categories_available)
 
     # "--reset-cache" option for dropping the cache database before performing any work
     for parser in [parser_station, parser_stations, parser_weather]:

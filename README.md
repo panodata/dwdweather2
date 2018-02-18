@@ -88,6 +88,14 @@ Get weather at station for certain hour (UTC):
 
     $ dwdweather weather 2667 2018021707
 
+To see what's going on, we recommend running the program with increased verbosity, like:
+
+    $ dwdweather -vvv weather 2667 2018021707
+
+To restrict the import to specified categories, run the program like:
+
+    $ dwdweather -vvv weather 2667 2018021707 --categories air_temperature,precipitation,pressure
+
 Finally, to drop the cache database before performing any work, use the "--reset-cache" option:
 
     $ dwdweather -vvv stations --reset-cache
@@ -123,6 +131,7 @@ Only used unter Python 2.7.5. Use at your own risk.
   * This and that: Fix console script entrypoint. Improve imports, debugging and inline comments.
   * Adapt to changes on upstream server ftp-cdc.dwd.de
   * Add "--reset-cache" option for dropping the cache database before performing any work
+  * Add "--categories" option for specifying list of comma-separated category names to import
 
 * *Version 0.7*:
   * Adapted to match modified Schema for sun data
