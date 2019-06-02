@@ -6,6 +6,7 @@ import sys
 import csv
 import json
 import math
+import logging
 import sqlite3
 import argparse
 import StringIO
@@ -30,6 +31,10 @@ See here for details.
     https://github.com/marians/dwd-weather/blob/master/LICENSE
 
 """
+
+
+log = logging.getLogger(__name__)
+
 
 class DwdCdcKnowledge(object):
     """
@@ -604,7 +609,7 @@ class DwdWeather(object):
 
         # Sanity checks
         if not self.fields:
-            print('ERROR: No schema information for resolution "%s" found, please check your knowledge base.' % self.resolution)
+            log.error('No schema information for resolution "%s" found, please check your knowledge base.' % self.resolution)
             sys.exit(1)
 
         # Storage location
@@ -620,22 +625,22 @@ class DwdWeather(object):
         # Initialize
         self.init_cache()
 
-
         # =========================
         # Configure FTP data source
         # =========================
 
         # Path to folder on CDC FTP server
         self.serverpath = self.climate_observations_path.format(resolution=self.resolution)
+        log.info('Acquiring data from server host={}, path={}'.format(self.server, self.serverpath))
 
         # Credentials for CDC FTP server
         self.user = "anonymous"
         self.passwd = "guest@example.com"
 
-        self.verbosity = 0
-        if "verbosity" in kwargs:
-            self.verbosity = kwargs["verbosity"]
-
+        if "debug" in kwargs:
+            self.debug = int(kwargs["debug"])
+        else:
+            self.debug = 0
 
     def dict_factory(self, cursor, row):
         """
@@ -645,7 +650,6 @@ class DwdWeather(object):
         for idx, col in enumerate(cursor.description):
             d[col[0]] = row[idx]
         return d
-
 
     def get_cache_path(self, path):
         if path is None:
@@ -677,7 +681,7 @@ class DwdWeather(object):
 
         tablename = self.get_measurement_table()
 
-        # Create measures table and index
+        # Create measurement tables and index.
         create = """CREATE TABLE IF NOT EXISTS %s
             (
                 station_id int,
@@ -716,8 +720,7 @@ class DwdWeather(object):
         """
         Load station meta data from DWD server.
         """
-        if self.verbosity > 0:
-            print("Importing stations data from FTP server")
+        log.info("Importing stations data from FTP server")
         ftp = FTP(self.server)
         ftp.login(self.user, self.passwd)
         for category in self.categories:
@@ -734,8 +737,7 @@ class DwdWeather(object):
             for filename in serverfiles:
                 if "Beschreibung_Stationen" not in filename:
                     continue
-                if self.verbosity > 1:
-                    print("Reading file %s/%s" % (path, filename))
+                log.info("Reading file %s/%s" % (path, filename))
                 f = StringIO.StringIO()
                 ftp.retrbinary('RETR ' + filename, f.write)
                 self.import_station(f.getvalue())
@@ -838,39 +840,23 @@ class DwdWeather(object):
         ftp = FTP(self.server)
         ftp.login(self.user, self.passwd)
 
+        # Reporting.
+        station_info = self.station_info(station_id)
+        log.info("Downloading measurements for station %d" % station_id)
+        log.info("Station information: %s" % json.dumps(station_info, indent=2, sort_keys=True))
 
-        # Download data
-        if self.verbosity > 0:
-            station_info = self.station_info(station_id)
-            print
-            print("=" * 42)
-            print("Downloading measurements for station %d" % station_id)
-            print("=" * 42)
-            if station_info:
-                print(json.dumps(station_info, indent=2, sort_keys=True))
-                print("=" * 42)
-
+        # Download data.
         importfiles = []
         for category in categories_selected:
             cat = category['name']
-            if self.verbosity > 1:
-                print
-                print('-' * 42)
-                print("Downloading %s data" % cat.replace('_', ' '))
-                print('-' * 42)
-
             importfiles += self.download_measures(ftp, station_id, cat, timeranges)
-
-
-        # Import data
-        if self.verbosity > 1:
-            print
-            print("=" * 42)
-            print("Importing measurements for station %d" % station_id)
-            print("=" * 42)
-            if not importfiles:
-                print("WARNING: No files to import for station %s" % station_id)
-
+            key = category['key']
+            name = category['name'].replace('_', ' ')
+            log.info('Downloading "{}" data ({})'.format(name, key))
+        # Import data for all categories.
+        log.info("Importing measurements for station %d" % station_id)
+        if not importfiles:
+            log.warning("No files to import for station %s" % station_id)
         for item in importfiles:
             self.import_measures_textfile(item[0], item[1])
             os.remove(item[1])
@@ -884,16 +870,14 @@ class DwdWeather(object):
             if timerange is None:
                 timerange = "-"
             data_filename = "data_%s_%s_%s.txt" % (station_id, timerange, cat)
-            if self.verbosity > 1:
-                print("Reading from FTP: %s/%s" % (path, filename))
+            log.info("Reading from FTP: %s/%s" % (path, filename))
             ftp.retrbinary('RETR ' + filename, open(output_path, 'wb').write)
             with ZipFile(output_path) as myzip:
                 for f in myzip.infolist():
 
                     # This is the data file
                     if f.filename.startswith('produkt_'):
-                        if self.verbosity > 1:
-                            print("Reading from Zip: %s" % (f.filename))
+                        log.info("Reading from Zip: %s" % (f.filename))
                         myzip.extract(f, self.cachepath + os.sep)
                         os.rename(self.cachepath + os.sep + f.filename,
                             self.cachepath + os.sep + data_filename)
@@ -912,8 +896,7 @@ class DwdWeather(object):
                     filename = fn
                     break
             if filename is None:
-                if self.verbosity > 1:
-                    print("WARNING: Station %s has no data for category '%s'" % (station_id, cat))
+                log.warning('Station "{}" has no data for category "{}"'.format(station_id, cat))
             else:
                 download(path, filename, cat)
         else:
@@ -932,8 +915,7 @@ class DwdWeather(object):
                         filename = fn
                         break
                 if filename is None:
-                    if self.verbosity > 1:
-                        print("WARNING: Station %s has no data for category '%s'" % (station_id, cat))
+                    log.warning('Station "{}" has no data for category "{}"'.format(station_id, cat))
                 else:
                     download(path, filename, cat, timerange)
 
@@ -944,8 +926,12 @@ class DwdWeather(object):
         Import content of source text file into database.
         """
 
-        if self.verbosity > 1:
-            print("Importing %s data from file %s" % (category, path))
+        category_name = category.replace('_', ' ')
+        if category not in self.fields:
+            log.warning('Importing "{}" data from "{}" not implemented yet'.format(category_name, path))
+            return
+
+        log.info('Importing "{}" data from file "{}"'.format(category_name, path))
 
         f = open(path, "rb")
         content = f.read()
@@ -1160,14 +1146,31 @@ class DwdWeather(object):
         return contents
 
 
+def float_range(min, max):
+    def check_range(x):
+        x = float(x)
+        if x < min or x > max:
+            raise argparse.ArgumentTypeError("%r not in range [%r, %r]"%(x, min, max))
+        return x
+    return check_range
+
+
+def setup_logging(level=logging.INFO):
+    log_format = '%(asctime)-15s [%(name)-10s] %(levelname)-7s: %(message)s'
+    logging.basicConfig(
+        format=log_format,
+        stream=sys.stderr,
+        level=level)
+
+
 def main():
 
     def get_station(args):
-        dw = DwdWeather(cachepath=args.cachepath, reset_cache=args.reset_cache, verbosity=args.verbosity)
+        dw = DwdWeather(cachepath=args.cachepath, reset_cache=args.reset_cache)
         print json.dumps(dw.nearest_station(lon=args.lon, lat=args.lat), indent=4)
 
     def get_stations(args):
-        dw = DwdWeather(cachepath=args.cachepath, reset_cache=args.reset_cache, verbosity=args.verbosity)
+        dw = DwdWeather(resolution=str(args.resolution), cachepath=args.cachepath, reset_cache=args.reset_cache)
         output = ""
         if args.type == "geojson":
             output = dw.stations_geojson()
@@ -1185,7 +1188,7 @@ def main():
     def get_weather(args):
 
         # Workhorse
-        dw = DwdWeather(resolution=str(args.resolution), cachepath=args.cachepath, reset_cache=args.reset_cache, verbosity=args.verbosity)
+        dw = DwdWeather(resolution=str(args.resolution), cachepath=args.cachepath, reset_cache=args.reset_cache)
 
         # Sanitize some input values
         timestamp = datetime.strptime(str(args.timestamp), dw.get_timestamp_format())
@@ -1194,29 +1197,34 @@ def main():
             categories = [cat.strip() for cat in args.categories.split(',')]
 
         # Query data
-        results = dw.query(args.station_id, timestamp, categories=categories)
+        station_id = args.station_id
+        log.info('Querying data for station "{station_id}" and categories "{categories}" at "{timestamp}"'.format(**locals()))
+        results = dw.query(station_id, timestamp, categories=categories)
         print json.dumps(results, indent=4, sort_keys=True)
 
     argparser = argparse.ArgumentParser(prog="dwdweather",
         description="Get weather information for Germany.")
-    argparser.add_argument("-v", dest="verbosity", action="count",
-        help="Activate verbose output. Use -vv or -vvv to increase verbosity.",
+
+    # Add global options.
+
+    # "--reset-cache" option for dropping the cache database before performing any work
+    argparser.add_argument("--reset-cache", action='store_true', help="Drop the cache database")
+
+    # Debugging.
+    argparser.add_argument("-d", dest="debug", action="count",
+        help="Activate debug output. Use -dd or -ddd to increase verbosity.",
         default=0)
+
+    # Path to sqlite database for caching.
     argparser.add_argument("-c", dest="cachepath",
         help="Path to cache directory. Defaults to .dwd-weather in user's home dir.",
         default=os.path.expanduser("~") + os.sep + ".dwd-weather")
 
+
+    # Add option parsers for subcommands.
     subparsers = argparser.add_subparsers(title="Actions", help="Main client actions.")
 
-    def float_range(min, max):
-        def check_range(x):
-            x = float(x)
-            if x < min or x > max:
-                raise argparse.ArgumentTypeError("%r not in range [%r, %r]"%(x,min,max))
-            return x
-        return check_range
-
-    # 1. station options
+    # 1. "station" options
     parser_station = subparsers.add_parser('station',
         help='Find a station')
     parser_station.set_defaults(func=get_station)
@@ -1226,7 +1234,7 @@ def main():
         help="Geographic latitude (y) component as float, e.g. 53.9")
 
 
-    # 2. stations options
+    # 2. "stations" options
     parser_stations = subparsers.add_parser('stations',
         help='List or export stations')
     parser_stations.set_defaults(func=get_stations)
@@ -1236,7 +1244,13 @@ def main():
     parser_stations.add_argument("-f", "--file", type=str, dest="output_path",
         help="Export file path. If not given, STDOUT is used.")
 
-    # weather options
+    # "--resolution" option for choosing the corresponding dataset, defaults to "hourly"
+    resolutions_available = DwdCdcKnowledge.climate.get_resolutions().keys()
+    parser_stations.add_argument("--resolution", type=str, choices=resolutions_available, default="hourly",
+        help="Select dataset by resolution. By default, the \"hourly\" dataset is used.")
+
+
+    # 3. "weather" options
     parser_weather = subparsers.add_parser('weather', help='Get weather data for a station and hour')
     parser_weather.set_defaults(func=get_weather)
     parser_weather.add_argument("station_id", type=int, help="Numeric ID of the station, e.g. 2667")
@@ -1253,11 +1267,11 @@ def main():
         help="List of comma-separated categories to import. "
              "By default, *all* categories will be imported.")
 
-    # "--reset-cache" option for dropping the cache database before performing any work
-    for parser in [parser_station, parser_stations, parser_weather]:
-        parser.add_argument("--reset-cache", action='store_true', help="Drop the cache database")
-
     args = argparser.parse_args()
+    if args.debug > 0:
+        setup_logging(logging.DEBUG)
+    else:
+        setup_logging()
     args.func(args)
 
 
