@@ -584,7 +584,6 @@ class DwdWeather(object):
         - cachepath
         """
 
-
         # =================
         # Configure context
         # =================
@@ -594,7 +593,6 @@ class DwdWeather(object):
 
         # Categories of measurements on the server
         self.categories = DwdCdcKnowledge.climate.measurements
-
 
         # ========================
         # Configure cache database
@@ -743,7 +741,6 @@ class DwdWeather(object):
                 self.import_station(f.getvalue())
                 f.close()
 
-
     def import_station(self, content):
         """
         Takes the content of one station metadata file
@@ -809,8 +806,6 @@ class DwdWeather(object):
                     station_start))
         self.db.commit()
 
-
-
     def import_measures(self, station_id, categories=None, latest=True, historic=False):
         """
         Load data from DWD server.
@@ -827,7 +822,7 @@ class DwdWeather(object):
         CSV -> Sqlite import function.
         """
 
-        # Compute timerange labels / subfolder names
+        # Compute timerange labels / subfolder names.
         timeranges = []
         if latest:
             timeranges.append("recent")
@@ -839,7 +834,7 @@ class DwdWeather(object):
         if categories:
             categories_selected = filter(lambda category: category['name'] in categories, categories_selected)
 
-        # Connect to FTP server
+        # Connect to FTP server.
         ftp = FTP(self.server)
         ftp.login(self.user, self.passwd)
 
@@ -944,10 +939,9 @@ class DwdWeather(object):
 
         return importfiles
 
-
     def import_measures_textfile(self, category, path):
         """
-        Import content of source text file into database
+        Import content of source text file into database.
         """
 
         if self.verbosity > 1:
@@ -1222,7 +1216,7 @@ def main():
             return x
         return check_range
 
-    # station options
+    # 1. station options
     parser_station = subparsers.add_parser('station',
         help='Find a station')
     parser_station.set_defaults(func=get_station)
@@ -1231,7 +1225,8 @@ def main():
     parser_station.add_argument("lat", type=float_range(-90, 90),
         help="Geographic latitude (y) component as float, e.g. 53.9")
 
-    # stations options
+
+    # 2. stations options
     parser_stations = subparsers.add_parser('stations',
         help='List or export stations')
     parser_stations.set_defaults(func=get_stations)
