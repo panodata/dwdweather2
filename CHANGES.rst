@@ -19,6 +19,7 @@ in progress
 - Improve ISO date parsing by switching to "dateutil"
 - Modularisation and refactoring
 - Make station list honor selected resolution
+- Fix parsing list of categories
 
 2014-07-30 0.7.0
 ================

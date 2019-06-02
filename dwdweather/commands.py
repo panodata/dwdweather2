@@ -42,12 +42,10 @@ def run():
 
         # Sanitize some input values
         timestamp = parsedate(str(args.timestamp))
-        categories = None
-        if args.categories:
-            categories = [cat.strip() for cat in args.categories.split(',')]
 
         # Query data
         station_id = args.station_id
+        categories = args.categories
         log.info('Querying data for station "{station_id}" and categories "{categories}" at "{timestamp}"'.format(**locals()))
         results = dw.query(station_id, timestamp, categories=categories)
         print json.dumps(results, indent=4, sort_keys=True)
@@ -108,7 +106,7 @@ def run():
 
     # "--categories" option for restricting import to specified category names, defaults to "all"
     categories_available = [item['name'] for item in DwdCdcKnowledge.climate.measurements]
-    parser_weather.add_argument("--categories", type=str, choices=categories_available,
+    parser_weather.add_argument("--categories", type=str, nargs='*', choices=categories_available,
                                 help="List of comma-separated categories to import. "
                                      "By default, *all* categories will be imported.")
 

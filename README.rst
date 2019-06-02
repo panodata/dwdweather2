@@ -43,7 +43,7 @@ Get weather at station for certain hour (UTC)::
 
 To restrict the import to specified categories, run the program like::
 
-    dwdweather weather 2667 2019-06-01T15:00 --categories=air_temperature,precipitation,pressure
+    dwdweather weather 2667 2019-06-01T15:00 --categories air_temperature precipitation pressure
 
 Finally, to drop the cache database before performing any work, use the ``--reset-cache`` option::
 
