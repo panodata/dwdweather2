@@ -17,6 +17,7 @@ from ftplib import FTP, Error as FTPError
 from zipfile import ZipFile
 from datetime import datetime
 from collections import OrderedDict
+from dateutil.parser import parse as parsedate
 
 
 """
@@ -1043,7 +1044,7 @@ class DwdWeather(object):
         c.execute(sql)
         item = c.fetchone()
         if item["maxdatetime"] is not None:
-            latest =  datetime.strptime(str(item["maxdatetime"]), "%Y%m%d%H")
+            latest = datetime.strptime(str(item["maxdatetime"]), "%Y%m%d%H")
             return datetime.utcnow() - latest
 
     def get_measurement_table(self):
@@ -1221,7 +1222,7 @@ def main():
         dw = DwdWeather(resolution=str(args.resolution), cachepath=args.cachepath, reset_cache=args.reset_cache)
 
         # Sanitize some input values
-        timestamp = datetime.strptime(str(args.timestamp), dw.get_timestamp_format())
+        timestamp = parsedate(str(args.timestamp))
         categories = None
         if args.categories:
             categories = [cat.strip() for cat in args.categories.split(',')]
@@ -1284,7 +1285,7 @@ def main():
     parser_weather = subparsers.add_parser('weather', help='Get weather data for a station and hour')
     parser_weather.set_defaults(func=get_weather)
     parser_weather.add_argument("station_id", type=int, help="Numeric ID of the station, e.g. 2667")
-    parser_weather.add_argument("timestamp", type=int, help="Timestamp in the format of yyyymmddHHMM or yyyymmddHHMM")
+    parser_weather.add_argument("timestamp", type=str, help="Timestamp in the format of YYYY-MM-DDTHH or YYYY-MM-DDTHH:MM")
 
     # "--resolution" option for choosing the corresponding dataset, defaults to "hourly"
     resolutions_available = DwdCdcKnowledge.climate.get_resolutions().keys()
