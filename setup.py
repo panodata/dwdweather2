@@ -1,28 +1,57 @@
-# encoding: utf-8
+# -*- coding: utf-8 -*-
+import os
+from setuptools import setup, find_packages
 
-from setuptools import setup
-
-try:
-    import pypandoc
-    description = pypandoc.convert('README.md', 'rst')
-except (IOError, ImportError):
-    description = ''
+here = os.path.abspath(os.path.dirname(__file__))
+README = open(os.path.join(here, 'README.rst')).read()
 
 setup(name='dwdweather2',
       version='0.8.0dev1',
-      description='Inofficial DWD weather data client (Deutscher Wetterdienst)',
-      long_description=description,
+      description='Python client to access weather data from Deutscher Wetterdienst (DWD), '
+                  'the federal meteorological service in Germany.',
+      long_description=README,
+      license="MIT",
+      classifiers=[
+        "Programming Language :: Python",
+        "License :: OSI Approved :: MIT License",
+        "Development Status :: 4 - Beta",
+        "Environment :: Console",
+        "Environment :: Web Environment",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Education",
+        "Intended Audience :: Information Technology",
+        "Intended Audience :: Manufacturing",
+        "Intended Audience :: Science/Research",
+        "Intended Audience :: System Administrators",
+        "Topic :: Communications",
+        "Topic :: Database",
+        "Topic :: Internet",
+        "Topic :: Scientific/Engineering :: Atmospheric Science",
+        "Topic :: Scientific/Engineering :: GIS",
+        "Topic :: Scientific/Engineering :: Human Machine Interfaces",
+        "Topic :: Scientific/Engineering :: Information Analysis",
+        "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
+        "Topic :: Scientific/Engineering :: Visualization",
+        "Topic :: Software Development :: Libraries",
+        "Topic :: System :: Archiving",
+        "Topic :: Text Processing",
+        "Topic :: Utilities",
+        "Operating System :: POSIX",
+        "Operating System :: Unix",
+        "Operating System :: MacOS"
+      ],
       author='Marian Steinbach',
       author_email='marian@sendung.de',
       url='https://github.com/hiveeyes/dwdweather2',
-      py_modules=['dwdweather'],
+      packages=find_packages(),
+      include_package_data=True,
       install_requires=[
           'tqdm==4.32.1',
           'python-dateutil==2.8.0',
       ],
       entry_points={
           'console_scripts': [
-              'dwdweather = dwdweather:main'
+              'dwdweather = dwdweather.commands:run'
           ]
       }
 )

@@ -17,6 +17,7 @@ in progress
 - Improve SQL processing by using a single UPSERT statement instead of
   running two consecutive INSERT / UPDATE statements
 - Improve ISO date parsing by switching to "dateutil"
+- Modularisation and refactoring
 
 2014-07-30 0.7.0
 ================
