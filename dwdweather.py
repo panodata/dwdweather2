@@ -12,7 +12,7 @@ import argparse
 import StringIO
 import traceback
 from copy import deepcopy
-from ftplib import FTP
+from ftplib import FTP, Error as FTPError
 from zipfile import ZipFile
 from datetime import datetime
 from collections import OrderedDict
@@ -734,7 +734,13 @@ class DwdWeather(object):
                 path = "%s/%s" % (self.serverpath, cat)
             else:
                 path = "%s/%s/recent" % (self.serverpath, cat)
-            ftp.cwd(path)
+
+            try:
+                ftp.cwd(path)
+            except FTPError as ex:
+                log.warning('Resolution "{}" has no category "{}"'.format(self.resolution, cat))
+                continue
+
             # get directory contents
             serverfiles = []
             ftp.retrlines('NLST', serverfiles.append)
@@ -909,7 +915,13 @@ class DwdWeather(object):
                 if timerange == "historical":
                     timerange_suffix = "hist"
                 path = "%s/%s/%s" % (self.serverpath, cat, timerange)
-                ftp.cwd(path)
+
+                try:
+                    ftp.cwd(path)
+                except FTPError as ex:
+                    log.warning('Station "{}" has no data for category "{}"'.format(station_id, cat))
+                    continue
+
                 # list dir content, get right file name
                 serverfiles = []
                 ftp.retrlines('NLST', serverfiles.append)
