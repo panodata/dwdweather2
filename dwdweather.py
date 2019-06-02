@@ -46,14 +46,19 @@ class DwdCdcKnowledge(object):
         # The different measurements for climate data
         measurements = [
             {'key': 'TU', 'name': 'air_temperature'},
-            {'key': 'EB', 'name': 'soil_temperature'},
-            {'key': 'SD', 'name': 'sun'},
-            {'key': 'ST', 'name': 'solar'},
+            {'key': 'CS', 'name': 'cloud_type'},
+            {'key': 'N',  'name': 'cloudiness'},
+            {'key': 'TD', 'name': 'dew_point'},
+            {'key': 'TX', 'name': 'extreme_temperature'},
+            {'key': 'FX', 'name': 'extreme_wind'},
             {'key': 'RR', 'name': 'precipitation'},
             {'key': 'P0', 'name': 'pressure'},
-            {'key': 'FF', 'name': 'wind'},
-            {'key': 'N',  'name': 'cloudiness'},
+            {'key': 'EB', 'name': 'soil_temperature'},
+            {'key': 'ST', 'name': 'solar'},
+            {'key': 'SD', 'name': 'sun'},
             {'key': 'VV', 'name': 'visibility'},
+            {'key': 'FF', 'name': 'wind'},
+            {'key': 'F',  'name': 'wind_synop'},
         ]
 
 
@@ -579,7 +584,6 @@ class DwdWeather(object):
 
     # FTP server path for our files
     climate_observations_path = "/pub/CDC/observations_germany/climate/{resolution}"
-
 
     def __init__(self, **kwargs):
         """
