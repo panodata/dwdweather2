@@ -63,41 +63,37 @@ TODO: Update these fields for the "hourly" resolution, add the fields for the "1
 
 ### Command line utility:
 
-Get closest station (first argument is longitude, second is latitude):
-
-    $ dwdweather station 7.0 51.0
-
 Get all stations:
 
-    $ dwdweather stations
+    dwdweather stations
+
+Get closest station (first argument is longitude, second is latitude):
+
+    dwdweather station 7.0 51.0
 
 Export stations as CSV:
 
-	$ dwdweather stations -t csv -f stations.csv
+	dwdweather stations -t csv -f stations.csv
 
 Export stations as GeoJSON:
 
-	$ dwdweather stations -t geojson -f stations.geojson
+	dwdweather stations -t geojson -f stations.geojson
 
 Get weather at station for certain hour (UTC):
 
-    $ dwdweather weather 2667 2018021707
-
-To see what's going on, we recommend running the program with increased verbosity, like:
-
-    $ dwdweather -vvv weather 2667 2018021707
+    dwdweather weather 2667 2019-06-01T15:00
 
 To restrict the import to specified categories, run the program like:
 
-    $ dwdweather -vvv weather 2667 2018021707 --categories air_temperature,precipitation,pressure
+    dwdweather weather 2667 2019-06-01T15:00 --categories=air_temperature,precipitation,pressure
 
 Finally, to drop the cache database before performing any work, use the "--reset-cache" option:
 
-    $ dwdweather -vvv stations --reset-cache
+    dwdweather --reset-cache stations
 
 Choose dataset of different resolution:
 
-    $ dwdweather -vvv weather 2667 201802170730 --resolution 10_minutes
+    dwdweather weather 2667 2019-06-01T15:20 --resolution=10_minutes
 
 
 ### Some notes
