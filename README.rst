@@ -21,9 +21,13 @@ Synopsis
 Command line usage
 ==================
 
-Get all stations::
+Get all stations with ``hourly`` resolution (default)::
 
     dwdweather stations
+
+Get all stations with ``10_minutes`` resolution::
+
+    dwdweather --resolution 10_minutes stations
 
 Get closest station (first argument is longitude, second is latitude)::
 
@@ -31,11 +35,11 @@ Get closest station (first argument is longitude, second is latitude)::
 
 Export stations as CSV::
 
-    dwdweather stations -t csv -f stations.csv
+    dwdweather stations --type csv --file stations.csv
 
 Export stations as GeoJSON::
 
-    dwdweather stations -t geojson -f stations.geojson
+    dwdweather stations --type geojson --file stations.geojson
 
 Get weather at station for certain hour (UTC)::
 
@@ -49,9 +53,10 @@ Finally, to drop the cache database before performing any work, use the ``--rese
 
     dwdweather --reset-cache stations
 
-Choose dataset of different resolution::
+Choose dataset with ``10_minutes`` resolution::
 
-    dwdweather weather 2667 2019-06-01T15:20 --resolution=10_minutes
+    dwdweather --resolution=10_minutes weather 2667 2019-06-01T15:20
+
 
 Usage as library
 ================
@@ -72,7 +77,7 @@ Usage as library
    query_hour = datetime(2014, 3, 22, 12)
 
    result = dw.query(station_id=closest["station_id"], hour=query_hour)
-   print result
+   print(result)
 
 ``DwdWeather.query()`` returns a dictionary with the full set of
 possible keys as outlined in ``doc/usage-library.rst``.

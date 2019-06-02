@@ -40,7 +40,7 @@ class DwdWeather(object):
     # FTP server path for our files
     climate_observations_path = "/pub/CDC/observations_germany/climate/{resolution}"
 
-    def __init__(self, **kwargs):
+    def __init__(self, resolution=None, **kwargs):
         """
         Use all keyword arguments as configuration
         - user
@@ -53,7 +53,7 @@ class DwdWeather(object):
         # =================
 
         # Temporal resolution
-        self.resolution = kwargs.get('resolution')
+        self.resolution = resolution
 
         # Categories of measurements on the server
         self.categories = DwdCdcKnowledge.climate.measurements
@@ -90,7 +90,8 @@ class DwdWeather(object):
 
         # Path to folder on CDC FTP server
         self.serverpath = self.climate_observations_path.format(resolution=self.resolution)
-        log.info('Acquiring data from server host={}, path={}'.format(self.server, self.serverpath))
+        log.info('Acquiring dataset for resolution "{}" from server "{}" at path "{}"'.format(
+            self.resolution, self.server, self.serverpath))
 
         # Credentials for CDC FTP server
         self.user = "anonymous"

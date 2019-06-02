@@ -16,11 +16,12 @@ log = logging.getLogger(__name__)
 def run():
 
     def get_station(args):
-        dw = DwdWeather(cachepath=args.cachepath, reset_cache=args.reset_cache)
-        print json.dumps(dw.nearest_station(lon=args.lon, lat=args.lat), indent=4)
+        dw = DwdWeather(resolution=args.resolution, cachepath=args.cachepath, reset_cache=args.reset_cache)
+        output = json.dumps(dw.nearest_station(lon=args.lon, lat=args.lat), indent=4)
+        print(output)
 
     def get_stations(args):
-        dw = DwdWeather(resolution=str(args.resolution), cachepath=args.cachepath, reset_cache=args.reset_cache)
+        dw = DwdWeather(resolution=args.resolution, cachepath=args.cachepath, reset_cache=args.reset_cache)
         output = ""
         if args.type == "geojson":
             output = dw.stations_geojson()
@@ -29,7 +30,7 @@ def run():
         elif args.type == "plain":
             output = dw.stations_csv(delimiter="\t")
         if args.output_path is None:
-            print output
+            print(output)
         else:
             f = open(args.output_path, "wb")
             f.write(output)
@@ -38,7 +39,7 @@ def run():
     def get_weather(args):
 
         # Workhorse
-        dw = DwdWeather(resolution=str(args.resolution), cachepath=args.cachepath, reset_cache=args.reset_cache)
+        dw = DwdWeather(resolution=args.resolution, cachepath=args.cachepath, reset_cache=args.reset_cache)
 
         # Sanitize some input values
         timestamp = parsedate(str(args.timestamp))
@@ -53,6 +54,11 @@ def run():
     argparser = argparse.ArgumentParser(prog="dwdweather", description="Get weather information for Germany.")
 
     # Add global options.
+
+    # "--resolution" option for choosing the corresponding dataset, defaults to "hourly"
+    resolutions_available = DwdCdcKnowledge.climate.get_resolutions().keys()
+    argparser.add_argument("--resolution", type=str, choices=resolutions_available, default="hourly",
+                           help="Select dataset by resolution. By default, the \"hourly\" dataset is used.")
 
     # "--reset-cache" option for dropping the cache database before performing any work
     argparser.add_argument("--reset-cache", action='store_true', help="Drop the cache database")
@@ -83,26 +89,14 @@ def run():
     parser_stations.add_argument("-t", "--type", dest="type",
                                  choices=["geojson", "csv", "plain"], default="plain",
                                  help="Export format")
-
     parser_stations.add_argument("-f", "--file", type=str, dest="output_path",
                                  help="Export file path. If not given, STDOUT is used.")
-
-    # "--resolution" option for choosing the corresponding dataset, defaults to "hourly"
-    resolutions_available = DwdCdcKnowledge.climate.get_resolutions().keys()
-    parser_stations.add_argument("--resolution", type=str, choices=resolutions_available, default="hourly",
-        help="Select dataset by resolution. By default, the \"hourly\" dataset is used.")
-
 
     # 3. "weather" options
     parser_weather = subparsers.add_parser('weather', help='Get weather data for a station and hour')
     parser_weather.set_defaults(func=get_weather)
     parser_weather.add_argument("station_id", type=int, help="Numeric ID of the station, e.g. 2667")
     parser_weather.add_argument("timestamp", type=str, help="Timestamp in the format of YYYY-MM-DDTHH or YYYY-MM-DDTHH:MM")
-
-    # "--resolution" option for choosing the corresponding dataset, defaults to "hourly"
-    resolutions_available = DwdCdcKnowledge.climate.get_resolutions().keys()
-    parser_weather.add_argument("--resolution", type=str, choices=resolutions_available, default="hourly",
-                                help="Select dataset by resolution. By default, the \"hourly\" dataset is used.")
 
     # "--categories" option for restricting import to specified category names, defaults to "all"
     categories_available = [item['name'] for item in DwdCdcKnowledge.climate.measurements]

@@ -20,6 +20,7 @@ in progress
 - Modularisation and refactoring
 - Make station list honor selected resolution
 - Fix parsing list of categories
+- Improve dataset/resolution handling
 
 2014-07-30 0.7.0
 ================
