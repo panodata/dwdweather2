@@ -141,23 +141,19 @@ class DwdWeather(object):
         tablename = self.get_measurement_table()
 
         # Create measurement tables and index.
-        create = """CREATE TABLE IF NOT EXISTS %s
-            (
-                station_id int,
-                datetime int, """ % tablename
-
         create_fields = []
         for category in sorted(self.fields.keys()):
             for fieldname, fieldtype in self.fields[category]:
                 create_fields.append("%s %s" % (fieldname, fieldtype))
-        create += ",\n".join(create_fields)
-        create += ")"
+        create = 'CREATE TABLE IF NOT EXISTS {table} (station_id int, datetime int, {sql_fields})'.format(table=tablename, sql_fields=",\n".join(create_fields))
+        index = 'CREATE UNIQUE INDEX IF NOT EXISTS {table}_uniqueidx ON {table} (station_id, datetime)'.format(table=tablename)
         c.execute(create)
-        index = 'CREATE UNIQUE INDEX IF NOT EXISTS {}_uniqueidx ON {} (station_id, datetime)'.format(tablename, tablename)
         c.execute(index)
 
-        # Create stations table and index.
-        create = """CREATE TABLE IF NOT EXISTS stations
+        # Create station tables and index.
+        tablename = self.get_stations_table()
+        create = """
+            CREATE TABLE IF NOT EXISTS {table}
             (
                 station_id int,
                 date_start int,
@@ -167,10 +163,11 @@ class DwdWeather(object):
                 height int,
                 name text,
                 state text
-            )"""
-        index = 'CREATE UNIQUE INDEX IF NOT EXISTS stations_uniqueidx ON stations (station_id, date_start)'
+            )""".format(table=tablename)
+        index = 'CREATE UNIQUE INDEX IF NOT EXISTS {table}_uniqueidx ON {table} (station_id, date_start)'.format(table=tablename)
         c.execute(create)
         c.execute(index)
+
         self.db.commit()
 
     def import_stations(self):
@@ -215,12 +212,15 @@ class DwdWeather(object):
         content = content.replace("\r", "")
         content = content.replace("\n\n", "\n")
         content = content.decode("latin1")
-        insert_sql = """INSERT OR IGNORE INTO stations
+
+        table = self.get_stations_table()
+
+        insert_sql = """INSERT OR IGNORE INTO {table}
             (station_id, date_start, date_end, geo_lon, geo_lat, height, name, state)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)"""
-        update_sql = """UPDATE stations
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)""".format(table=table)
+        update_sql = """UPDATE {table}
             SET date_end=?, geo_lon=?, geo_lat=?, height=?, name=?, state=?
-            WHERE station_id=? AND date_start=?"""
+            WHERE station_id=? AND date_start=?""".format(table=table)
         cursor = self.db.cursor()
         #print content
         linecount = 0
@@ -502,6 +502,9 @@ class DwdWeather(object):
             latest = datetime.strptime(str(item["maxdatetime"]), "%Y%m%d%H")
             return datetime.utcnow() - latest
 
+    def get_stations_table(self):
+        return 'stations_%s' % self.resolution
+
     def get_measurement_table(self):
         return 'measures_%s' % self.resolution
 
@@ -551,10 +554,12 @@ class DwdWeather(object):
         Return list of dicts with all stations.
         """
         out = []
-        sql = """SELECT s2.*
-            FROM stations s1
-            LEFT JOIN stations s2 ON (s1.station_id=s2.station_id AND s1.date_end=s1.date_end)
-            GROUP BY s1.station_id"""
+        table = self.get_stations_table()
+        sql = """
+            SELECT s2.*
+            FROM {table} s1
+            LEFT JOIN {table} s2 ON (s1.station_id=s2.station_id AND s1.date_end=s1.date_end)
+            GROUP BY s1.station_id""".format(table=table)
         c = self.db.cursor()
         for row in c.execute(sql):
             out.append(row)
@@ -566,7 +571,8 @@ class DwdWeather(object):
         return out
 
     def station_info(self, station_id):
-        sql = "SELECT * FROM stations WHERE station_id=?"
+        table = self.get_stations_table()
+        sql = "SELECT * FROM {table} WHERE station_id=?".format(table=table)
         c = self.db.cursor()
         c.execute(sql, (station_id,))
         return c.fetchone()

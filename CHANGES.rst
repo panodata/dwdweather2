@@ -18,6 +18,7 @@ in progress
   running two consecutive INSERT / UPDATE statements
 - Improve ISO date parsing by switching to "dateutil"
 - Modularisation and refactoring
+- Make station list honor selected resolution
 
 2014-07-30 0.7.0
 ================

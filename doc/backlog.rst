@@ -6,7 +6,6 @@ dwdweather backlog
 ======
 Prio 1
 ======
-- [o] Stations list does not honor resolution yet
 - [o] Switch to new endpoint
 - [o] Switch from FTP to HTTP
 - [o] Selecting specific categories does not work yet
@@ -56,3 +55,9 @@ Prio 3
 
     print date_median(frame[0])
     print date_quantile_50(frame[0])
+
+
+====
+Done
+====
+- [x] Stations list does not honor resolution yet
