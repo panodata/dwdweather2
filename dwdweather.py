@@ -11,6 +11,7 @@ import sqlite3
 import argparse
 import StringIO
 import traceback
+from tqdm import tqdm
 from copy import deepcopy
 from ftplib import FTP, Error as FTPError
 from zipfile import ZipFile
@@ -598,7 +599,7 @@ class DwdWeather(object):
         # =================
 
         # Temporal resolution
-        self.resolution = kwargs['resolution']
+        self.resolution = kwargs.get('resolution')
 
         # Categories of measurements on the server
         self.categories = DwdCdcKnowledge.climate.measurements
@@ -698,10 +699,10 @@ class DwdWeather(object):
         create += ",\n".join(create_fields)
         create += ")"
         c.execute(create)
-        index = """CREATE UNIQUE INDEX IF NOT EXISTS unq
-            ON %s (station_id, datetime)""" % tablename
+        index = 'CREATE UNIQUE INDEX IF NOT EXISTS {}_uniqueidx ON {} (station_id, datetime)'.format(tablename, tablename)
         c.execute(index)
-        # create stations table and index
+
+        # Create stations table and index.
         create = """CREATE TABLE IF NOT EXISTS stations
             (
                 station_id int,
@@ -713,12 +714,10 @@ class DwdWeather(object):
                 name text,
                 state text
             )"""
-        index = """CREATE UNIQUE INDEX IF NOT EXISTS station_unique
-            ON stations (station_id, date_start)"""
+        index = 'CREATE UNIQUE INDEX IF NOT EXISTS stations_uniqueidx ON stations (station_id, date_start)'
         c.execute(create)
         c.execute(index)
         self.db.commit()
-
 
     def import_stations(self):
         """
@@ -858,11 +857,11 @@ class DwdWeather(object):
         # Download data.
         importfiles = []
         for category in categories_selected:
-            cat = category['name']
-            importfiles += self.download_measures(ftp, station_id, cat, timeranges)
             key = category['key']
             name = category['name'].replace('_', ' ')
             log.info('Downloading "{}" data ({})'.format(name, key))
+            importfiles += self.download_measures(ftp, station_id, category['name'], timeranges)
+
         # Import data for all categories.
         log.info("Importing measurements for station %d" % station_id)
         if not importfiles:
@@ -956,17 +955,31 @@ class DwdWeather(object):
 
         # Create SQL template
         tablename = self.get_measurement_table()
+        fieldnames = []
+        value_placeholders = []
         sets = []
-        for fieldname, fieldtype in self.fields[category]:
+
+        fields = list(self.fields[category])
+        for fieldname, fieldtype in fields:
             sets.append(fieldname + "=?")
-        insert_template = "INSERT OR IGNORE INTO %s (station_id, datetime) VALUES (?, ?)" % tablename
-        update_template = "UPDATE %s SET %s WHERE station_id=? AND datetime=?" % (tablename, ", ".join(sets))
+
+        fields.append(('station_id', 'str'))
+        fields.append(('datetime', 'datetime'))
+
+        for fieldname, fieldtype in fields:
+            fieldnames.append(fieldname)
+            value_placeholders.append('?')
+
+        # Build UPSERT SQL statement
+        # https://www.sqlite.org/lang_UPSERT.html
+        sql_template = "INSERT INTO {table} ({fields}) VALUES ({value_placeholders}) ON CONFLICT (station_id, datetime) DO UPDATE SET {sets} WHERE station_id=? AND datetime=?".format(
+            table=tablename, fields=', '.join(fieldnames), value_placeholders=', '.join(value_placeholders), sets=', '.join(sets))
 
         # Create data rows
-        insert_datasets = []
-        update_datasets = []
+        c = self.db.cursor()
         count = 0
-        for line in content.split("\n"):
+        items = content.split("\n")
+        for line in tqdm(items, ncols=79):
             count += 1
             line = line.strip()
             if line == "" or line == '\x1a':
@@ -982,9 +995,9 @@ class DwdWeather(object):
                 parts[0] = int(parts[0])
 
                 # Parse timestamp, ignore minutes
+                # Fixme: Is this also true for resolution=10_minutes?
                 parts[1] = int(parts[1].replace('T', '').replace(':', ''))
 
-                insert_datasets.append([parts[0], parts[1]])
                 dataset = []
                 # station_id and datetime
                 #if category == "soil_temp":
@@ -1013,12 +1026,13 @@ class DwdWeather(object):
                 # station_id and datetime for WHERE clause
                 dataset.append(parts[0])
                 dataset.append(parts[1])
-                update_datasets.append(dataset)
-        c = self.db.cursor()
-        c.executemany(insert_template, insert_datasets)
-        c.executemany(update_template, update_datasets)
-        self.db.commit()
 
+                #log.debug('SQL template: %s', sql_template)
+                #log.debug('Dataset: %s', dataset)
+
+                c.execute(sql_template, dataset + dataset)
+
+        self.db.commit()
 
     def get_data_age(self):
         """
