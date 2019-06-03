@@ -1,3 +1,25 @@
+.. image:: https://img.shields.io/badge/Python-2.7-green.svg
+    :target: https://github.com/hiveeyes/dwdweather2
+
+.. image:: https://img.shields.io/pypi/v/dwdweather2.svg
+    :target: https://pypi.org/project/dwdweather2/
+
+.. image:: https://img.shields.io/github/tag/hiveeyes/dwdweather2.svg
+    :target: https://github.com/hiveeyes/dwdweather2
+
+.. image:: https://assets.okfn.org/images/ok_buttons/od_80x15_red_green.png
+    :target: https://okfn.org/opendata/
+
+.. image:: https://assets.okfn.org/images/ok_buttons/oc_80x15_blue.png
+    :target: https://okfn.org/opendata/
+
+.. image:: https://assets.okfn.org/images/ok_buttons/os_80x15_orange_grey.png
+    :target: https://okfn.org/opendata/
+
+|
+
+.. _dwdweather2-readme:
+
 ###########
 dwdweather2
 ###########

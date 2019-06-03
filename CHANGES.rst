@@ -5,6 +5,11 @@ dwdweather changelog
 in progress
 ===========
 
+2019-06-03 0.8.1
+================
+- Fix installation on Windows systems re. charset encoding of ``README.rst``.
+  Thanks, @Noordsestern!
+
 2019-06-03 0.8.0
 ================
 - This and that: Fix console script entrypoint. Improve imports, debugging and inline comments.

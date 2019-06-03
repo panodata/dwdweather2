@@ -8,6 +8,9 @@ Prio 1
 ======
 - [o] Use ``appdirs`` in ``get_cache_path``
 - [o] Cache does not honor category selection
+- [o] Retrieve information for multiple stations
+- [o] Make ready for Python3
+
 
 ======
 Prio 2
