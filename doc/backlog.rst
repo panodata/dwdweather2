@@ -6,10 +6,8 @@ dwdweather backlog
 ======
 Prio 1
 ======
-- [o] Switch to new endpoint
-- [o] Switch from FTP to HTTP
-- [o] Selecting specific categories does not work yet
-
+- [o] Use ``appdirs`` in ``get_cache_path``
+- [o] Cache does not honor category selection
 
 ======
 Prio 2
@@ -61,3 +59,5 @@ Prio 3
 Done
 ====
 - [x] Stations list does not honor resolution yet
+- [x] Selecting specific categories does not work yet
+- [x] Switch from FTP to new HTTP endpoint https://opendata.dwd.de/climate_environment/CDC/

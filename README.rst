@@ -27,7 +27,7 @@ Get all stations with ``hourly`` resolution (default)::
 
 Get all stations with ``10_minutes`` resolution::
 
-    dwdweather --resolution 10_minutes stations
+    dwdweather stations --resolution 10_minutes
 
 Get closest station (first argument is longitude, second is latitude)::
 
@@ -51,11 +51,11 @@ To restrict the import to specified categories, run the program like::
 
 Finally, to drop the cache database before performing any work, use the ``--reset-cache`` option::
 
-    dwdweather --reset-cache stations
+    dwdweather stations --reset-cache
 
 Choose dataset with ``10_minutes`` resolution::
 
-    dwdweather --resolution=10_minutes weather 2667 2019-06-01T15:20
+    dwdweather weather 2667 2019-06-01T15:20 --resolution=10_minutes
 
 
 Usage as library

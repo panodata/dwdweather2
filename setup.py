@@ -43,11 +43,23 @@ setup(name='dwdweather2',
       author='Marian Steinbach',
       author_email='marian@sendung.de',
       url='https://github.com/hiveeyes/dwdweather2',
+      keywords='dwd cdc deutscher wetterdienst climate data center weather '
+               'opendata data acquisition transformation export '
+               'geospatial temporal timeseries '
+               'sensor network observation '
+               'http rest api '
+               'json csv'
+               'rdbms sql sqlite '
+               'grafana',
       packages=find_packages(),
       include_package_data=True,
       install_requires=[
           'tqdm==4.32.1',
           'python-dateutil==2.8.0',
+          'requests==2.22.0',
+          'requests-cache==0.5.0',
+          #'htmllistparse==0.5',     # Needs min. Python 3.3
+          'beautifulsoup4==4.7.1',
       ],
       entry_points={
           'console_scripts': [

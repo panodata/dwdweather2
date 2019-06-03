@@ -11,12 +11,17 @@ import logging
 import sqlite3
 import StringIO
 import traceback
+
 from tqdm import tqdm
 from copy import deepcopy
-from ftplib import FTP, Error as FTPError
-from zipfile import ZipFile
 from datetime import datetime
+
+from dwdweather.client import DwdCdcClient
 from dwdweather.knowledge import DwdCdcKnowledge
+
+from dwdweather import __appname__ as APP_NAME
+from dwdweather import __version__ as APP_VERSION
+
 """
 Python client to access weather data from Deutscher Wetterdienst (DWD),
 the federal meteorological service in Germany.
@@ -32,35 +37,40 @@ Licensed under the MIT license. See file ``LICENSE`` for details.
 log = logging.getLogger(__name__)
 
 
-class DwdWeather(object):
+class DwdWeather:
 
-    # DWD FTP server host name
-    server = "ftp-cdc.dwd.de"
+    # DWD CDC HTTP server.
+    baseuri = 'https://opendata.dwd.de/climate_environment/CDC'
 
-    # FTP server path for our files
-    climate_observations_path = "/pub/CDC/observations_germany/climate/{resolution}"
+    # Observations in Germany.
+    germany_climate_uri = baseuri + '/observations_germany/climate/{resolution}'
 
-    def __init__(self, resolution=None, **kwargs):
-        """
-        Use all keyword arguments as configuration
-        - user
-        - passwd
-        - cachepath
-        """
+    def __init__(self, resolution=None, category_names=None, **kwargs):
 
         # =================
         # Configure context
         # =================
 
-        # Temporal resolution
+        # Data set selector by resolution (houry, 10_minutes).
         self.resolution = resolution
 
-        # Categories of measurements on the server
-        self.categories = DwdCdcKnowledge.climate.measurements
+        # Categories of measurements.
+        self.categories = self.resolve_categories(category_names)
 
-        # ========================
-        # Configure cache database
-        # ========================
+        if "debug" in kwargs:
+            self.debug = int(kwargs["debug"])
+        else:
+            self.debug = 0
+
+        # Storage location
+        cp = None
+        if "cache_path" in kwargs:
+            cp = kwargs["cache_path"]
+        self.cache_path = self.get_cache_path(cp)
+
+        # =================================
+        # Acquire knowledgebase information
+        # =================================
 
         # Database field definition
         knowledge = DwdCdcKnowledge.climate.get_resolution_by_name(self.resolution)
@@ -68,14 +78,17 @@ class DwdWeather(object):
 
         # Sanity checks
         if not self.fields:
-            log.error('No schema information for resolution "%s" found, please check your knowledge base.' % self.resolution)
+            log.error('No schema information for resolution "%s" found in knowledge base.', self.resolution)
             sys.exit(1)
 
-        # Storage location
-        cp = None
-        if "cachepath" in kwargs:
-            cp = kwargs["cachepath"]
-        self.cachepath = self.get_cache_path(cp)
+        # =====================
+        # Configure HTTP client
+        # =====================
+        self.cdc = DwdCdcClient(self.resolution, self.cache_path)
+
+        # ========================
+        # Configure cache database
+        # ========================
 
         # Reset cache if requested
         if "reset_cache" in kwargs and kwargs["reset_cache"]:
@@ -84,23 +97,13 @@ class DwdWeather(object):
         # Initialize
         self.init_cache()
 
-        # =========================
-        # Configure FTP data source
-        # =========================
-
-        # Path to folder on CDC FTP server
-        self.serverpath = self.climate_observations_path.format(resolution=self.resolution)
-        log.info('Acquiring dataset for resolution "{}" from server "{}" at path "{}"'.format(
-            self.resolution, self.server, self.serverpath))
-
-        # Credentials for CDC FTP server
-        self.user = "anonymous"
-        self.passwd = "guest@example.com"
-
-        if "debug" in kwargs:
-            self.debug = int(kwargs["debug"])
+    def resolve_categories(self, category_names):
+        available_categories = deepcopy(DwdCdcKnowledge.climate.measurements)
+        if category_names:
+            categories = filter(lambda category: category['name'] in category_names, available_categories)
         else:
-            self.debug = 0
+            categories = available_categories
+        return categories
 
     def dict_factory(self, cursor, row):
         """
@@ -121,12 +124,14 @@ class DwdWeather(object):
         return home
 
     def get_cache_database(self):
-        database_file = os.path.join(self.cachepath, "dwd-weather.db")
+        database_file = os.path.join(self.cache_path, APP_NAME + ".db")
         return database_file
 
     def reset_cache(self):
         database_file = self.get_cache_database()
-        os.remove(database_file)
+
+        if os.path.exists(database_file):
+            os.remove(database_file)
 
     def init_cache(self):
         """
@@ -175,34 +180,8 @@ class DwdWeather(object):
         """
         Load station meta data from DWD server.
         """
-        log.info("Importing stations data from FTP server")
-        ftp = FTP(self.server)
-        ftp.login(self.user, self.passwd)
-        for category in self.categories:
-            cat = category['name']
-            if cat == "solar":
-                # workaround - solar has no subdirs
-                path = "%s/%s" % (self.serverpath, cat)
-            else:
-                path = "%s/%s/recent" % (self.serverpath, cat)
-
-            try:
-                ftp.cwd(path)
-            except FTPError as ex:
-                log.warning('Resolution "{}" has no category "{}"'.format(self.resolution, cat))
-                continue
-
-            # get directory contents
-            serverfiles = []
-            ftp.retrlines('NLST', serverfiles.append)
-            for filename in serverfiles:
-                if "Beschreibung_Stationen" not in filename:
-                    continue
-                log.info("Reading file %s/%s" % (path, filename))
-                f = StringIO.StringIO()
-                ftp.retrbinary('RETR ' + filename, f.write)
-                self.import_station(f.getvalue())
-                f.close()
+        for result in self.cdc.get_stations(self.categories):
+            self.import_station(result.payload)
 
     def import_station(self, content):
         """
@@ -272,7 +251,7 @@ class DwdWeather(object):
                     station_start))
         self.db.commit()
 
-    def import_measures(self, station_id, categories=None, latest=True, historic=False):
+    def import_measures(self, station_id, latest=True, historic=False):
         """
         Load data from DWD server.
         Parameter:
@@ -295,118 +274,34 @@ class DwdWeather(object):
         if historic:
             timeranges.append("historical")
 
-        # Restrict import to specified categories
-        categories_selected = deepcopy(self.categories)
-        if categories:
-            categories_selected = filter(lambda category: category['name'] in categories, categories_selected)
-
-        # Connect to FTP server.
-        ftp = FTP(self.server)
-        ftp.login(self.user, self.passwd)
-
         # Reporting.
         station_info = self.station_info(station_id)
         log.info("Downloading measurements for station %d" % station_id)
         log.info("Station information: %s" % json.dumps(station_info, indent=2, sort_keys=True))
 
-        # Download data.
-        importfiles = []
-        for category in categories_selected:
+        # Download and import data.
+        for category in self.categories:
             key = category['key']
             name = category['name'].replace('_', ' ')
             log.info('Downloading "{}" data ({})'.format(name, key))
-            importfiles += self.download_measures(ftp, station_id, category['name'], timeranges)
+            for result in self.cdc.get_measurements(station_id, category, timeranges):
+                # Import data for all categories.
+                log.info('Importing measurements for station "{}" and category "{}"'.format(station_id, category))
+                #log.warning("No files to import for station %s" % station_id)
+                self.import_measures_textfile(result)
 
-        # Import data for all categories.
-        log.info("Importing measurements for station %d" % station_id)
-        if not importfiles:
-            log.warning("No files to import for station %s" % station_id)
-        for item in importfiles:
-            self.import_measures_textfile(item[0], item[1])
-            os.remove(item[1])
-
-    def download_measures(self, ftp, station_id, cat, timeranges):
-
-        importfiles = []
-
-        def download(path, filename, cat, timerange=None):
-            output_path = self.cachepath + os.sep + filename
-            if timerange is None:
-                timerange = "-"
-            data_filename = "data_%s_%s_%s.txt" % (station_id, timerange, cat)
-            log.info("Reading from FTP: %s/%s" % (path, filename))
-            ftp.retrbinary('RETR ' + filename, open(output_path, 'wb').write)
-            with ZipFile(output_path) as myzip:
-                for f in myzip.infolist():
-
-                    # This is the data file
-                    if f.filename.startswith('produkt_'):
-                        log.info("Reading from Zip: %s" % (f.filename))
-                        myzip.extract(f, self.cachepath + os.sep)
-                        os.rename(self.cachepath + os.sep + f.filename,
-                            self.cachepath + os.sep + data_filename)
-                        importfiles.append([cat, self.cachepath + os.sep + data_filename])
-            os.remove(output_path)
-
-        if cat == "solar":
-            path = "%s/%s" % (self.serverpath, cat)
-            ftp.cwd(path)
-            # list dir content, get right file name
-            serverfiles = []
-            ftp.retrlines('NLST', serverfiles.append)
-            filename = None
-            for fn in serverfiles:
-                if ("_%05d_" % station_id) in fn:
-                    filename = fn
-                    break
-            if filename is None:
-                log.warning('Station "{}" has no data for category "{}"'.format(station_id, cat))
-            else:
-                download(path, filename, cat)
-        else:
-            for timerange in timeranges:
-                timerange_suffix = "akt"
-                if timerange == "historical":
-                    timerange_suffix = "hist"
-                path = "%s/%s/%s" % (self.serverpath, cat, timerange)
-
-                try:
-                    ftp.cwd(path)
-                except FTPError as ex:
-                    log.warning('Station "{}" has no data for category "{}"'.format(station_id, cat))
-                    continue
-
-                # list dir content, get right file name
-                serverfiles = []
-                ftp.retrlines('NLST', serverfiles.append)
-                filename = None
-                for fn in serverfiles:
-                    if ("_%05d_" % station_id) in fn:
-                        filename = fn
-                        break
-                if filename is None:
-                    log.warning('Station "{}" has no data for category "{}"'.format(station_id, cat))
-                else:
-                    download(path, filename, cat, timerange)
-
-        return importfiles
-
-    def import_measures_textfile(self, category, path):
+    def import_measures_textfile(self, result):
         """
         Import content of source text file into database.
         """
 
-        category_name = category.replace('_', ' ')
-        if category not in self.fields:
-            log.warning('Importing "{}" data from "{}" not implemented yet'.format(category_name, path))
+        category_name = result.category['name']
+        category_label = category_name.replace('_', ' ')
+        if category_name not in self.fields:
+            log.warning('Importing "{}" data from "{}" not implemented yet'.format(category_label, result.uri))
             return
 
-        log.info('Importing "{}" data from file "{}"'.format(category_name, path))
-
-        f = open(path, "rb")
-        content = f.read()
-        f.close()
-        content = content.strip()
+        log.info('Importing "{}" data from "{}"'.format(category_label, result.uri))
 
         # Create SQL template
         tablename = self.get_measurement_table()
@@ -414,7 +309,7 @@ class DwdWeather(object):
         value_placeholders = []
         sets = []
 
-        fields = list(self.fields[category])
+        fields = list(self.fields[category_name])
         for fieldname, fieldtype in fields:
             sets.append(fieldname + "=?")
 
@@ -435,7 +330,7 @@ class DwdWeather(object):
         # Create data rows.
         c = self.db.cursor()
         count = 0
-        items = content.split("\n")
+        items = result.payload.split("\n")
         for line in tqdm(items, ncols=79):
             count += 1
             line = line.strip()
@@ -461,7 +356,7 @@ class DwdWeather(object):
                 #    print fields[category]
                 #    print parts
                 for n in range(2, len(parts)):
-                    (fieldname, fieldtype) = self.fields[category][(n - 2)]
+                    (fieldname, fieldtype) = self.fields[category_name][(n - 2)]
                     if parts[n] == "-999":
                         parts[n] = None
                     elif fieldtype == "real":
@@ -513,7 +408,7 @@ class DwdWeather(object):
         knowledge = DwdCdcKnowledge.climate.get_resolution_by_name(self.resolution)
         return knowledge.__timestamp_format__
 
-    def query(self, station_id, timestamp, categories=None, recursion=0):
+    def query(self, station_id, timestamp, recursion=0):
         """
         Get values from cache.
         station_id: Numeric station ID
@@ -528,12 +423,12 @@ class DwdWeather(object):
                 # cache miss
                 age = (datetime.utcnow() - timestamp).total_seconds() / 86400
                 if age < 360:
-                    self.import_measures(station_id, categories=categories, latest=True)
+                    self.import_measures(station_id, latest=True)
                 elif age >= 360 and age <= 370:
-                    self.import_measures(station_id, categories=categories, latest=True, historic=True)
+                    self.import_measures(station_id, latest=True, historic=True)
                 else:
-                    self.import_measures(station_id, categories=categories, historic=True)
-                return self.query(station_id, timestamp, categories=categories, recursion=(recursion + 1))
+                    self.import_measures(station_id, historic=True)
+                return self.query(station_id, timestamp, recursion=(recursion + 1))
             c.close()
             return out
 

@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 class DwdCdcKnowledge(object):
     """
-    Knowledge about the data layout on the Climate Data Centers (CDC) FTP server provided by the DWD.
+    Knowledge about the data layout on the DWD Climate Data Centers (CDC) server.
     """
 
     class climate:
@@ -39,6 +39,9 @@ class DwdCdcKnowledge(object):
             # Temporal resolution: hourly
             class hourly:
 
+                # Which data set / resolution subfolder to use.
+                __folder__ = 'hourly'
+
                 # Which format does the timestamp of this resolution have?
                 __timestamp_format__ = "%Y%m%d%H"
 
@@ -55,13 +58,13 @@ class DwdCdcKnowledge(object):
 
                     - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
                     - Temporal resolution:  hourly
-                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/air_temperature/recent/DESCRIPTION_obsgermany_climate_hourly_tu_recent_en.pdf
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/air_temperature/recent/DESCRIPTION_obsgermany_climate_hourly_tu_recent_en.pdf
 
                 - Historical
 
                     - Temporal coverage:    01.01.1893 - 31.12.2016
                     - Temporal resolution:  hourly
-                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/air_temperature/historical/DESCRIPTION_obsgermany_climate_hourly_tu_historical_en.pdf
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/air_temperature/historical/DESCRIPTION_obsgermany_climate_hourly_tu_historical_en.pdf
 
                 Fields
                 ------
@@ -96,13 +99,13 @@ class DwdCdcKnowledge(object):
 
                     - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
                     - Temporal resolution:  several times a day
-                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/soil_temperature/recent/DESCRIPTION_obsgermany_climate_hourly_soil_temperature_recent_en.pdf
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/soil_temperature/recent/DESCRIPTION_obsgermany_climate_hourly_soil_temperature_recent_en.pdf
 
                 - Historical
 
                     - Temporal coverage:    01.01.1949 - 31.12.2016
                     - Temporal resolution:  several times a day
-                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/soil_temperature/historical/DESCRIPTION_obsgermany_climate_hourly_soil_temperature_historical_en.pdf
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/soil_temperature/historical/DESCRIPTION_obsgermany_climate_hourly_soil_temperature_historical_en.pdf
 
                 Fields
                 ------
@@ -145,13 +148,13 @@ class DwdCdcKnowledge(object):
 
                     - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
                     - Temporal resolution:  hourly
-                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/precipitation/recent/DESCRIPTION_obsgermany_climate_hourly_precipitation_recent_en.pdf
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/precipitation/recent/DESCRIPTION_obsgermany_climate_hourly_precipitation_recent_en.pdf
 
                 - Historical
 
                     - Temporal coverage:    01.09.1995 - 31.12.2016
                     - Temporal resolution:  hourly
-                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/precipitation/historical/DESCRIPTION_obsgermany_climate_hourly_precipitation_historical_en.pdf
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/precipitation/historical/DESCRIPTION_obsgermany_climate_hourly_precipitation_historical_en.pdf
 
                 Fields
                 ------
@@ -206,13 +209,13 @@ class DwdCdcKnowledge(object):
 
                     - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
                     - Temporal resolution:  hourly
-                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/sun/recent/DESCRIPTION_obsgermany_climate_hourly_sun_recent_en.pdf
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/sun/recent/DESCRIPTION_obsgermany_climate_hourly_sun_recent_en.pdf
 
                 - Historical
 
                     - Temporal coverage:    01.01.1893 - 31.12.2016
                     - Temporal resolution:  hourly
-                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/sun/historical/DESCRIPTION_obsgermany_climate_hourly_sun_historical_en.pdf
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/sun/historical/DESCRIPTION_obsgermany_climate_hourly_sun_historical_en.pdf
 
                 Fields
                 ------
@@ -245,13 +248,13 @@ class DwdCdcKnowledge(object):
 
                     - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
                     - Temporal resolution:  hourly
-                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/pressure/recent/DESCRIPTION_obsgermany_climate_hourly_pressure_recent_en.pdf
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/pressure/recent/DESCRIPTION_obsgermany_climate_hourly_pressure_recent_en.pdf
 
                 - Historical
 
                     - Temporal coverage:    01.01.1949 - 31.12.2016
                     - Temporal resolution:  hourly
-                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/pressure/historical/DESCRIPTION_obsgermany_climate_hourly_pressure_historical_en.pdf
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/pressure/historical/DESCRIPTION_obsgermany_climate_hourly_pressure_historical_en.pdf
 
 
                 Fields
@@ -288,13 +291,13 @@ class DwdCdcKnowledge(object):
 
                     - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
                     - Temporal resolution:  hourly
-                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/wind/recent/DESCRIPTION_obsgermany_climate_hourly_wind_recent_en.pdf
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/wind/recent/DESCRIPTION_obsgermany_climate_hourly_wind_recent_en.pdf
 
                 - Historical
 
                     - Temporal coverage:    01.01.1893 - 31.12.2016
                     - Temporal resolution:  hourly
-                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/wind/historical/DESCRIPTION_obsgermany_climate_hourly_wind_historical_en.pdf
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/wind/historical/DESCRIPTION_obsgermany_climate_hourly_wind_historical_en.pdf
 
                 Fields
                 ------
@@ -334,13 +337,13 @@ class DwdCdcKnowledge(object):
 
                     - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
                     - Temporal resolution:  several times a day
-                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/cloudiness/recent/DESCRIPTION_obsgermany_climate_hourly_cloudiness_recent_en.pdf
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/cloudiness/recent/DESCRIPTION_obsgermany_climate_hourly_cloudiness_recent_en.pdf
 
                 - Historical
 
                     - Temporal coverage:    01.01.1949 - 31.12.2016
                     - Temporal resolution:  several times a day
-                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/cloudiness/historical/DESCRIPTION_obsgermany_climate_hourly_cloudiness_historical_en.pdf
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/cloudiness/historical/DESCRIPTION_obsgermany_climate_hourly_cloudiness_historical_en.pdf
 
                 Fields
                 ------
@@ -377,13 +380,13 @@ class DwdCdcKnowledge(object):
 
                     - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
                     - Temporal resolution:  several times a day
-                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/visibility/recent/DESCRIPTION_obsgermany_climate_hourly_visibility_recent_en.pdf
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/visibility/recent/DESCRIPTION_obsgermany_climate_hourly_visibility_recent_en.pdf
 
                 - Historical
 
                     - Temporal coverage:    01.01.1949 - 31.12.2016
                     - Temporal resolution:  several times a day
-                    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/visibility/historical/DESCRIPTION_obsgermany_climate_hourly_visibility_historical_en.pdf
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/visibility/historical/DESCRIPTION_obsgermany_climate_hourly_visibility_historical_en.pdf
 
                 Fields
                 ------
@@ -418,7 +421,7 @@ class DwdCdcKnowledge(object):
 
                 - Temporal coverage:    01.01.1937 - month before last month
                 - Temporal resolution:  hourly
-                - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/hourly/solar/DESCRIPTION_obsgermany_climate_hourly_solar_en.pdf
+                - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/solar/DESCRIPTION_obsgermany_climate_hourly_solar_en.pdf
 
                 Fields
                 ------
@@ -459,7 +462,7 @@ class DwdCdcKnowledge(object):
             # Temporal resolution: 10 minutes
             class minutes_10:
 
-                # Which FTP folder to use
+                # Which data set / resolution subfolder to use.
                 __folder__ = '10_minutes'
 
                 # Which format does the timestamp of this resolution have?
@@ -474,7 +477,7 @@ class DwdCdcKnowledge(object):
                 Documentation
                 -------------
 
-                - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/10_minutes/air_temperature/meta_data/
+                - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/10_minutes/air_temperature/meta_data/
 
                 Fields
                 ------
@@ -528,9 +531,7 @@ class DwdCdcKnowledge(object):
             resolutions_map = OrderedDict()
             resolutions = DwdCdcKnowledge.as_dict(cls.resolutions)
             for name, class_ in resolutions.iteritems():
-                folder = name
-                if hasattr(class_, '__folder__'):
-                    folder = class_.__folder__
+                folder = class_.__folder__
                 resolutions_map[folder] = class_
             return resolutions_map
 

@@ -21,6 +21,7 @@ in progress
 - Make station list honor selected resolution
 - Fix parsing list of categories
 - Improve dataset/resolution handling
+- Switch from FTP to new HTTP endpoint https://opendata.dwd.de/climate_environment/CDC/
 
 2014-07-30 0.7.0
 ================
