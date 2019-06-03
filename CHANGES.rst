@@ -5,6 +5,10 @@ dwdweather changelog
 in progress
 ===========
 
+2019-06-03 0.8.2
+================
+- Reestablish Python 2.7 compatibility for ``setup.py``.
+
 2019-06-03 0.8.1
 ================
 - Fix installation on Windows systems re. charset encoding of ``README.rst``.
