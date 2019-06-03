@@ -4,6 +4,7 @@ dwdweather changelog
 
 in progress
 ===========
+- Make README.rst ASCII-clean re. #5
 
 2019-06-03 0.8.2
 ================

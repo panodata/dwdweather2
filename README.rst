@@ -111,11 +111,11 @@ Notes
 
 -  Data is cached in a local sqlite3 database to improve query
    performance for consecutive invocations.
--  The “stations cache” is filled upon first request to
+-  The "stations cache" is filled upon first request to
    ``DwdWeather.stations()`` or ``DwdWeather.nearest_station()``
--  The “stations cache” will not be refreshed automatically. Use
+-  The "stations cache" will not be refreshed automatically. Use
    ``DwdWeather.import_stations()`` to do this.
--  The “measures cache” is filled upon first access to measures using
+-  The "measures cache" is filled upon first access to measures using
    ``DwdWeather.query()`` and updated whenever a query cannot be
    fulfilled from the cache.
 -  The cache by default resides in the ``~/.dwd-weather`` directory.
@@ -123,10 +123,10 @@ Notes
    ``DwdWeather()``.
 -  The amount of data can be ~60 MB per station for full historic extent
    and will obviously increase by time.
--  If weather data is queried and the query can’t be fulfilled from the
+-  If weather data is queried and the query can't be fulfilled from the
    cache, data is loaded from the server - even if the data has been
-   updated a second before. If the server doesn’t have data for the
-   requested time (e.g. since it’s not yet available), this
+   updated a second before. If the server doesn't have data for the
+   requested time (e.g. since it's not yet available), this
    unnecessarily causes network traffic and wait time. Certainly space
    for improvement here.
 
