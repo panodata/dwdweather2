@@ -4,6 +4,9 @@ dwdweather changelog
 
 in progress
 ===========
+
+2019-06-03 0.8.0
+================
 - This and that: Fix console script entrypoint. Improve imports, debugging and inline comments.
 - Adapt to changes on upstream server ftp-cdc.dwd.de
 - Add ``--reset-cache`` option for dropping the cache database before performing any work

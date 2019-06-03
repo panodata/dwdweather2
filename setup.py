@@ -6,7 +6,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
 
 setup(name='dwdweather2',
-      version='0.8.0dev1',
+      version='0.7.0',
       description='Python client to access weather data from Deutscher Wetterdienst (DWD), '
                   'the federal meteorological service in Germany.',
       long_description=README,
