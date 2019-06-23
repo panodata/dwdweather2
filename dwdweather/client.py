@@ -4,7 +4,7 @@
 import io
 import os
 import logging
-from urlparse import urlparse
+from urllib.parse import urlparse
 from zipfile import ZipFile
 
 from requests_cache import CachedSession

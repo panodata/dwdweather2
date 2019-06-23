@@ -9,7 +9,7 @@ import json
 import math
 import logging
 import sqlite3
-import StringIO
+from io import StringIO
 import traceback
 
 from tqdm import tqdm
@@ -188,10 +188,10 @@ class DwdWeather:
         Takes the content of one station metadata file
         and imports it into the database.
         """
+        content = content.decode("latin1")
         content = content.strip()
         content = content.replace("\r", "")
         content = content.replace("\n\n", "\n")
-        content = content.decode("latin1")
 
         table = self.get_stations_table()
 
@@ -323,14 +323,14 @@ class DwdWeather:
         # Build UPSERT SQL statement.
         # https://www.sqlite.org/lang_UPSERT.html
         sql_template = "INSERT INTO {table} ({fields}) VALUES ({value_placeholders}) " \
-                       "ON CONFLICT (station_id, datetime) DO UPDATE SET {sets} WHERE station_id=? AND datetime=?".format(
+                       "ON CONFLICT (station_id, datetime) DO UPDATE SET {sets}C".format(
                         table=tablename, fields=', '.join(fieldnames),
                         value_placeholders=', '.join(value_placeholders), sets=', '.join(sets))
 
         # Create data rows.
         c = self.db.cursor()
         count = 0
-        items = result.payload.split("\n")
+        items = result.payload.decode("latin-1").split("\n")
         for line in tqdm(items, ncols=79):
             count += 1
             line = line.strip()
@@ -385,6 +385,33 @@ class DwdWeather:
                 c.execute(sql_template, dataset + dataset)
 
         self.db.commit()
+
+    def datetime_to_string(self, datetime):
+        return int(datetime.replace('T', '').replace(':', ''))
+
+    def get_measurement(self, station_id, date):
+        tablename = self.get_measurement_table()
+        sql = 'SELECT TOP 1 FROM {tablename} WHERE station_id = {station_id}, datetime = {datetime}'.format(
+            tablename=tablename, station_id=station_id, datetime=self.datetime_to_string(date)
+        )
+
+        c = self.db.cursor()
+        c.execute(sql)
+
+        result = []
+        for row in c.execute(sql):
+            result.append(row)
+
+        if len(result) > 0:
+            return result[0]
+        else:
+            return None
+
+    def insert_measurement(self):
+        return None
+
+    def update_measurement(self):
+        return None
 
     def get_data_age(self):
         """
@@ -508,7 +535,7 @@ class DwdWeather:
         """
         Return stations list as CSV.
         """
-        csvfile = StringIO.StringIO()
+        csvfile = StringIO()
         # assemble field list
         headers = ["station_id", "date_start", "date_end", "geo_lon", "geo_lat", "height", "name"]
         writer = csv.writer(csvfile, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL)
@@ -524,8 +551,6 @@ class DwdWeather:
                     val = str(val)
                 elif type(val) == float:
                     val = "%.4f" % val
-                elif type(val) == unicode:
-                    val = val.encode("utf8")
                 row.append(val)
             writer.writerow(row)
         contents = csvfile.getvalue()

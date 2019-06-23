@@ -49,7 +49,7 @@ def run():
         categories = args.categories
         log.info('Querying data for station "{station_id}" and categories "{categories}" at "{timestamp}"'.format(**locals()))
         results = dw.query(station_id, timestamp)
-        print json.dumps(results, indent=4, sort_keys=True)
+        print(json.dumps(results, indent=4, sort_keys=True))
 
     argparser = argparse.ArgumentParser(prog="dwdweather", description="Get weather information for Germany.")
 
