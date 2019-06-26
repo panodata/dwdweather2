@@ -20,7 +20,6 @@ from dwdweather.client import DwdCdcClient
 from dwdweather.knowledge import DwdCdcKnowledge
 
 from dwdweather import __appname__ as APP_NAME
-from dwdweather import __version__ as APP_VERSION
 
 """
 Python client to access weather data from Deutscher Wetterdienst (DWD),
@@ -290,6 +289,45 @@ class DwdWeather:
                 #log.warning("No files to import for station %s" % station_id)
                 self.import_measures_textfile(result)
 
+    def datetime_to_int(self, datetime):
+        return int(datetime.replace('T', '').replace(':', ''))
+
+    def get_measurement(self, station_id, date):
+        tablename = self.get_measurement_table()
+        sql = 'SELECT * FROM {tablename} WHERE station_id = {station_id} AND datetime = {datetime}'.format(
+            tablename=tablename, station_id=station_id, datetime=date
+        )
+
+        c = self.db.cursor()
+        c.execute(sql)
+
+        result = []
+        for row in c.execute(sql):
+            result.append(row)
+
+        if len(result) > 0:
+            return result[0]
+        else:
+            return None
+
+    def insert_measurement(self, tablename, fields, value_placeholders, dataset):
+        sql = 'INSERT INTO {tablename} ({fields}) VALUES ({value_placeholders})'.format(
+            tablename=tablename, fields=', '.join(fields), value_placeholders=', '.join(value_placeholders)
+        )
+
+        c = self.db.cursor()
+        c.execute(sql, dataset)
+        #self.db.commit()
+
+    def update_measurement(self, tablename, sets, dataset):
+        sql = 'UPDATE {tablename} SET {sets} WHERE station_id = ? AND datetime = ?'.format(
+            tablename=tablename, sets=', '.join(sets)
+        )
+
+        c = self.db.cursor()
+        c.execute(sql, dataset)
+        #self.db.commit()
+
     def import_measures_textfile(self, result):
         """
         Import content of source text file into database.
@@ -320,15 +358,7 @@ class DwdWeather:
             fieldnames.append(fieldname)
             value_placeholders.append('?')
 
-        # Build UPSERT SQL statement.
-        # https://www.sqlite.org/lang_UPSERT.html
-        sql_template = "INSERT INTO {table} ({fields}) VALUES ({value_placeholders}) " \
-                       "ON CONFLICT (station_id, datetime) DO UPDATE SET {sets}C".format(
-                        table=tablename, fields=', '.join(fieldnames),
-                        value_placeholders=', '.join(value_placeholders), sets=', '.join(sets))
-
         # Create data rows.
-        c = self.db.cursor()
         count = 0
         items = result.payload.decode("latin-1").split("\n")
         for line in tqdm(items, ncols=79):
@@ -371,7 +401,7 @@ class DwdWeather:
                             traceback.print_tb(trace)
                             sys.exit()
                     elif fieldtype == "datetime":
-                        parts[n] = int(parts[n].replace('T', '').replace(':', ''))
+                        parts[n] = self.datetime_to_int(parts[n])
 
                     dataset.append(parts[n])
 
@@ -382,36 +412,11 @@ class DwdWeather:
                 #log.debug('SQL template: %s', sql_template)
                 #log.debug('Dataset: %s', dataset)
 
-                c.execute(sql_template, dataset + dataset)
-
+                if self.get_measurement(parts[0], parts[1]):
+                    self.update_measurement(tablename, sets, dataset)
+                else:
+                    self.insert_measurement(tablename, fieldnames, value_placeholders, dataset)
         self.db.commit()
-
-    def datetime_to_string(self, datetime):
-        return int(datetime.replace('T', '').replace(':', ''))
-
-    def get_measurement(self, station_id, date):
-        tablename = self.get_measurement_table()
-        sql = 'SELECT TOP 1 FROM {tablename} WHERE station_id = {station_id}, datetime = {datetime}'.format(
-            tablename=tablename, station_id=station_id, datetime=self.datetime_to_string(date)
-        )
-
-        c = self.db.cursor()
-        c.execute(sql)
-
-        result = []
-        for row in c.execute(sql):
-            result.append(row)
-
-        if len(result) > 0:
-            return result[0]
-        else:
-            return None
-
-    def insert_measurement(self):
-        return None
-
-    def update_measurement(self):
-        return None
 
     def get_data_age(self):
         """
