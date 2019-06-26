@@ -6,9 +6,17 @@ in progress
 ===========
 - Make README.rst ASCII-clean re. #5
 
+2019-06-027 0.8.3
+=================
+- Python 3.6 compatibility
+- Running two consecutive INSERT / UPDATE statements instead of a single
+  UPSERT statement as the sqlite version delivered with Python does not
+  support this feature.
+
 2019-06-03 0.8.2
 ================
 - Reestablish Python 2.7 compatibility for ``setup.py``.
+-
 
 2019-06-03 0.8.1
 ================
