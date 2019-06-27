@@ -530,7 +530,7 @@ class DwdCdcKnowledge(object):
         def get_resolutions(cls):
             resolutions_map = OrderedDict()
             resolutions = DwdCdcKnowledge.as_dict(cls.resolutions)
-            for name, class_ in resolutions.iteritems():
+            for name, class_ in resolutions.items():
                 folder = class_.__folder__
                 resolutions_map[folder] = class_
             return resolutions_map
@@ -538,7 +538,7 @@ class DwdCdcKnowledge(object):
         @classmethod
         def get_resolution_by_name(cls, resolution):
             resolutions_map = cls.get_resolutions()
-            return resolutions_map[resolution]
+            return resolutions_map.get(resolution)
 
     @classmethod
     def as_dict(cls, what):

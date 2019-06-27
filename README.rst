@@ -151,7 +151,7 @@ and
 Status
 ******
 This piece of software is in a very early stage. No test cases yet. Only
-tested with Python 2.7. Use at your own risk.
+tested with Python 3.6. Use at your own risk.
 
 Credits
 =======
