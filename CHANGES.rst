@@ -4,14 +4,14 @@ dwdweather changelog
 
 in progress
 ===========
-- Make README.rst ASCII-clean re. #5
 
-2019-06-027 0.8.3
+2019-06-27 0.9.0
 =================
-- Python 3.6 compatibility
+- Make README.rst ASCII-clean re. #5
+- Python 3.6 compatibility. Thanks, @wtfuii.
 - Running two consecutive INSERT / UPDATE statements instead of a single
   UPSERT statement as the sqlite version delivered with Python does not
-  support this feature.
+  support this feature. Thanks, @wtfuii.
 
 2019-06-03 0.8.2
 ================

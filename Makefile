@@ -17,7 +17,7 @@ $(eval sphinx       := $(venvpath)/bin/sphinx-build)
 
 # Setup Python virtualenv
 setup-virtualenv:
-	@test -e $(python) || `command -v virtualenv` --python=python2 --no-site-packages $(venvpath)
+	@test -e $(python) || `command -v virtualenv` --python=python3 --no-site-packages $(venvpath)
 
 
 # -------
