@@ -14,6 +14,7 @@ jobs:
       - checkout
       - run:
           command: |
+              echo 'export PATH=/home/circleci/.local/bin:$PATH' >> $BASH_ENV
               python setup.py bdist_wheel
               pip install --user  .
               python -m pytest tests/
