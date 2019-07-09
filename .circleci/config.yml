@@ -12,9 +12,10 @@ jobs:
       - image: circleci/python:3.7.3-stretch
     steps:
       - checkout
+      - run: sudo chown -R circleci:circleci /usr/local/bin
+      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.7/site-packages
       - run:
           command: |
-              echo 'export PATH=/home/circleci/.local/bin:$PATH' >> $BASH_ENV
               python setup.py bdist_wheel
               pip install --user  .
               python -m pytest tests/
