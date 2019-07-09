@@ -1,6 +1,9 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 .mypy_cache/
+.vscode/
+.pytest_cache/
+
 *.py[cod]
 
 # C extensions
