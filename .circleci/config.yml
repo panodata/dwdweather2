@@ -19,6 +19,7 @@ jobs:
               python setup.py bdist_wheel
               pip install .
               pip install -r requirements-dev.txt
+              rm -rf dwdweather/
               python -m pytest tests/
 workflows:
   version: 2
