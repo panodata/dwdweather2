@@ -17,7 +17,8 @@ jobs:
       - run:
           command: |
               python setup.py bdist_wheel
-              pip install .[test]
+              pip install .
+              pip install -r requirements-dev.txt
               python -m pytest tests/
 workflows:
   version: 2
