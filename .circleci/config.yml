@@ -17,7 +17,7 @@ jobs:
       - run:
           command: |
               python setup.py bdist_wheel
-              pip install .
+              pip install .[test]
               python -m pytest tests/
 workflows:
   version: 2

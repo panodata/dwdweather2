@@ -63,5 +63,6 @@ setup(
         #'htmllistparse==0.5',     # Needs min. Python 3.3
         "beautifulsoup4>=4.7,<4.8",
     ],
+    tests_require=["pytest"],
     entry_points={"console_scripts": ["dwdweather = dwdweather.commands:run"]},
 )
