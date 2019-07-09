@@ -39,10 +39,10 @@ log = logging.getLogger(__name__)
 class DwdWeather:
 
     # DWD CDC HTTP server.
-    baseuri = 'https://opendata.dwd.de/climate_environment/CDC'
+    baseuri = "https://opendata.dwd.de/climate_environment/CDC"
 
     # Observations in Germany.
-    germany_climate_uri = baseuri + '/observations_germany/climate/{resolution}'
+    germany_climate_uri = baseuri + "/observations_germany/climate/{resolution}"
 
     def __init__(self, resolution="hourly", category_names=None, **kwargs):
 
@@ -77,7 +77,10 @@ class DwdWeather:
 
         # Sanity checks
         if not self.fields:
-            log.error('No schema information for resolution "%s" found in knowledge base.', self.resolution)
+            log.error(
+                'No schema information for resolution "%s" found in knowledge base.',
+                self.resolution,
+            )
             sys.exit(1)
 
         # =====================
@@ -99,7 +102,10 @@ class DwdWeather:
     def resolve_categories(self, category_names):
         available_categories = deepcopy(DwdCdcKnowledge.climate.measurements)
         if category_names:
-            categories = filter(lambda category: category['name'] in category_names, available_categories)
+            categories = filter(
+                lambda category: category["name"] in category_names,
+                available_categories,
+            )
         else:
             categories = available_categories
         return categories
@@ -150,8 +156,12 @@ class DwdWeather:
         for category in sorted(self.fields.keys()):
             for fieldname, fieldtype in self.fields[category]:
                 create_fields.append("%s %s" % (fieldname, fieldtype))
-        create = 'CREATE TABLE IF NOT EXISTS {table} (station_id int, datetime int, {sql_fields})'.format(table=tablename, sql_fields=",\n".join(create_fields))
-        index = 'CREATE UNIQUE INDEX IF NOT EXISTS {table}_uniqueidx ON {table} (station_id, datetime)'.format(table=tablename)
+        create = "CREATE TABLE IF NOT EXISTS {table} (station_id int, datetime int, {sql_fields})".format(
+            table=tablename, sql_fields=",\n".join(create_fields)
+        )
+        index = "CREATE UNIQUE INDEX IF NOT EXISTS {table}_uniqueidx ON {table} (station_id, datetime)".format(
+            table=tablename
+        )
         c.execute(create)
         c.execute(index)
 
@@ -168,8 +178,12 @@ class DwdWeather:
                 height int,
                 name text,
                 state text
-            )""".format(table=tablename)
-        index = 'CREATE UNIQUE INDEX IF NOT EXISTS {table}_uniqueidx ON {table} (station_id, date_start)'.format(table=tablename)
+            )""".format(
+            table=tablename
+        )
+        index = "CREATE UNIQUE INDEX IF NOT EXISTS {table}_uniqueidx ON {table} (station_id, date_start)".format(
+            table=tablename
+        )
         c.execute(create)
         c.execute(index)
 
@@ -196,19 +210,23 @@ class DwdWeather:
 
         insert_sql = """INSERT OR IGNORE INTO {table}
             (station_id, date_start, date_end, geo_lon, geo_lat, height, name, state)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)""".format(table=table)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)""".format(
+            table=table
+        )
         update_sql = """UPDATE {table}
             SET date_end=?, geo_lon=?, geo_lat=?, height=?, name=?, state=?
-            WHERE station_id=? AND date_start=?""".format(table=table)
+            WHERE station_id=? AND date_start=?""".format(
+            table=table
+        )
         cursor = self.db.cursor()
-        #print content
+        # print content
         linecount = 0
         for line in content.split("\n"):
             linecount += 1
             line = line.strip()
-            if line == "" or line == u'\x1a':
+            if line == "" or line == u"\x1a":
                 continue
-            #print linecount, line
+            # print linecount, line
             if linecount > 2:
                 # frist 7 fields
                 parts = re.split(r"\s+", line, 6)
@@ -218,7 +236,7 @@ class DwdWeather:
                 del parts[6]
                 parts.append(name)
                 parts.append(bundesland)
-                #print parts
+                # print parts
                 for n in range(len(parts)):
                     parts[n] = parts[n].strip()
                 station_id = int(parts[0])
@@ -230,24 +248,32 @@ class DwdWeather:
                 station_name = parts[6]
                 station_state = parts[7]
                 # issue sql
-                cursor.execute(insert_sql, (
-                    station_id,
-                    station_start,
-                    station_end,
-                    station_lon,
-                    station_lat,
-                    station_height,
-                    station_name,
-                    station_state))
-                cursor.execute(update_sql, (
-                    station_end,
-                    station_lon,
-                    station_lat,
-                    station_height,
-                    station_name,
-                    station_state,
-                    station_id,
-                    station_start))
+                cursor.execute(
+                    insert_sql,
+                    (
+                        station_id,
+                        station_start,
+                        station_end,
+                        station_lon,
+                        station_lat,
+                        station_height,
+                        station_name,
+                        station_state,
+                    ),
+                )
+                cursor.execute(
+                    update_sql,
+                    (
+                        station_end,
+                        station_lon,
+                        station_lat,
+                        station_height,
+                        station_name,
+                        station_state,
+                        station_id,
+                        station_start,
+                    ),
+                )
         self.db.commit()
 
     def import_measures(self, station_id, latest=True, historic=False):
@@ -276,25 +302,32 @@ class DwdWeather:
         # Reporting.
         station_info = self.station_info(station_id)
         log.info("Downloading measurements for station %d" % station_id)
-        log.info("Station information: %s" % json.dumps(station_info, indent=2, sort_keys=True))
+        log.info(
+            "Station information: %s"
+            % json.dumps(station_info, indent=2, sort_keys=True)
+        )
 
         # Download and import data.
         for category in self.categories:
-            key = category['key']
-            name = category['name'].replace('_', ' ')
+            key = category["key"]
+            name = category["name"].replace("_", " ")
             log.info('Downloading "{}" data ({})'.format(name, key))
             for result in self.cdc.get_measurements(station_id, category, timeranges):
                 # Import data for all categories.
-                log.info('Importing measurements for station "{}" and category "{}"'.format(station_id, category))
-                #log.warning("No files to import for station %s" % station_id)
+                log.info(
+                    'Importing measurements for station "{}" and category "{}"'.format(
+                        station_id, category
+                    )
+                )
+                # log.warning("No files to import for station %s" % station_id)
                 self.import_measures_textfile(result)
 
     def datetime_to_int(self, datetime):
-        return int(datetime.replace('T', '').replace(':', ''))
+        return int(datetime.replace("T", "").replace(":", ""))
 
     def get_measurement(self, station_id, date):
         tablename = self.get_measurement_table()
-        sql = 'SELECT * FROM {tablename} WHERE station_id = {station_id} AND datetime = {datetime}'.format(
+        sql = "SELECT * FROM {tablename} WHERE station_id = {station_id} AND datetime = {datetime}".format(
             tablename=tablename, station_id=station_id, datetime=date
         )
 
@@ -311,32 +344,38 @@ class DwdWeather:
             return None
 
     def insert_measurement(self, tablename, fields, value_placeholders, dataset):
-        sql = 'INSERT INTO {tablename} ({fields}) VALUES ({value_placeholders})'.format(
-            tablename=tablename, fields=', '.join(fields), value_placeholders=', '.join(value_placeholders)
+        sql = "INSERT INTO {tablename} ({fields}) VALUES ({value_placeholders})".format(
+            tablename=tablename,
+            fields=", ".join(fields),
+            value_placeholders=", ".join(value_placeholders),
         )
 
         c = self.db.cursor()
         c.execute(sql, dataset)
-        #self.db.commit()
+        # self.db.commit()
 
     def update_measurement(self, tablename, sets, dataset):
-        sql = 'UPDATE {tablename} SET {sets} WHERE station_id = ? AND datetime = ?'.format(
-            tablename=tablename, sets=', '.join(sets)
+        sql = "UPDATE {tablename} SET {sets} WHERE station_id = ? AND datetime = ?".format(
+            tablename=tablename, sets=", ".join(sets)
         )
 
         c = self.db.cursor()
         c.execute(sql, dataset)
-        #self.db.commit()
+        # self.db.commit()
 
     def import_measures_textfile(self, result):
         """
         Import content of source text file into database.
         """
 
-        category_name = result.category['name']
-        category_label = category_name.replace('_', ' ')
+        category_name = result.category["name"]
+        category_label = category_name.replace("_", " ")
         if category_name not in self.fields:
-            log.warning('Importing "{}" data from "{}" not implemented yet'.format(category_label, result.uri))
+            log.warning(
+                'Importing "{}" data from "{}" not implemented yet'.format(
+                    category_label, result.uri
+                )
+            )
             return
 
         log.info('Importing "{}" data from "{}"'.format(category_label, result.uri))
@@ -351,12 +390,12 @@ class DwdWeather:
         for fieldname, fieldtype in fields:
             sets.append(fieldname + "=?")
 
-        fields.append(('station_id', 'str'))
-        fields.append(('datetime', 'datetime'))
+        fields.append(("station_id", "str"))
+        fields.append(("datetime", "datetime"))
 
         for fieldname, fieldtype in fields:
             fieldnames.append(fieldname)
-            value_placeholders.append('?')
+            value_placeholders.append("?")
 
         # Create data rows.
         count = 0
@@ -364,7 +403,7 @@ class DwdWeather:
         for line in tqdm(items, ncols=79):
             count += 1
             line = line.strip()
-            if line == "" or line == '\x1a':
+            if line == "" or line == "\x1a":
                 continue
             line = line.replace(";eor", "")
             parts = line.split(";")
@@ -378,11 +417,11 @@ class DwdWeather:
 
                 # Parse timestamp, ignore minutes.
                 # Fixme: Is this also true for resolution=10_minutes?
-                parts[1] = int(parts[1].replace('T', '').replace(':', ''))
+                parts[1] = int(parts[1].replace("T", "").replace(":", ""))
 
                 dataset = []
                 # station_id and datetime
-                #if category == "soil_temp":
+                # if category == "soil_temp":
                 #    print fields[category]
                 #    print parts
                 for n in range(2, len(parts)):
@@ -395,8 +434,10 @@ class DwdWeather:
                         try:
                             parts[n] = int(parts[n])
                         except ValueError:
-                            sys.stderr.write("Error in converting field '%s', value '%s' to int.\n" % (
-                                fieldname, parts[n]))
+                            sys.stderr.write(
+                                "Error in converting field '%s', value '%s' to int.\n"
+                                % (fieldname, parts[n])
+                            )
                             (t, val, trace) = sys.exc_info()
                             traceback.print_tb(trace)
                             sys.exit()
@@ -409,20 +450,24 @@ class DwdWeather:
                 dataset.append(parts[0])
                 dataset.append(parts[1])
 
-                #log.debug('SQL template: %s', sql_template)
-                #log.debug('Dataset: %s', dataset)
+                # log.debug('SQL template: %s', sql_template)
+                # log.debug('Dataset: %s', dataset)
 
                 if self.get_measurement(parts[0], parts[1]):
                     self.update_measurement(tablename, sets, dataset)
                 else:
-                    self.insert_measurement(tablename, fieldnames, value_placeholders, dataset)
+                    self.insert_measurement(
+                        tablename, fieldnames, value_placeholders, dataset
+                    )
         self.db.commit()
 
     def get_data_age(self):
         """
         Return age of latest dataset as ``datetime.timedelta``.
         """
-        sql = "SELECT MAX(datetime) AS maxdatetime FROM %s" % self.get_measurement_table()
+        sql = (
+            "SELECT MAX(datetime) AS maxdatetime FROM %s" % self.get_measurement_table()
+        )
         c = self.db.cursor()
         c.execute(sql)
         item = c.fetchone()
@@ -431,10 +476,10 @@ class DwdWeather:
             return datetime.utcnow() - latest
 
     def get_stations_table(self):
-        return 'stations_%s' % self.resolution
+        return "stations_%s" % self.resolution
 
     def get_measurement_table(self):
-        return 'measures_%s' % self.resolution
+        return "measures_%s" % self.resolution
 
     def get_timestamp_format(self):
         knowledge = DwdCdcKnowledge.climate.get_resolution_by_name(self.resolution)
@@ -447,9 +492,14 @@ class DwdWeather:
         timestamp: datetime object
         """
         if recursion < 2:
-            sql = "SELECT * FROM %s WHERE station_id=? AND datetime=?" % self.get_measurement_table()
+            sql = (
+                "SELECT * FROM %s WHERE station_id=? AND datetime=?"
+                % self.get_measurement_table()
+            )
             c = self.db.cursor()
-            c.execute(sql, (station_id, timestamp.strftime(self.get_timestamp_format())))
+            c.execute(
+                sql, (station_id, timestamp.strftime(self.get_timestamp_format()))
+            )
             out = c.fetchone()
             if out is None:
                 # cache miss
@@ -467,13 +517,14 @@ class DwdWeather:
     def haversine_distance(self, origin, destination):
         lon1, lat1 = origin
         lon2, lat2 = destination
-        radius = 6371000 # meters
+        radius = 6371000  # meters
 
-        dlat = math.radians(lat2-lat1)
-        dlon = math.radians(lon2-lon1)
-        a = math.sin(dlat/2) * math.sin(dlat/2) + math.cos(math.radians(lat1)) \
-            * math.cos(math.radians(lat2)) * math.sin(dlon/2) * math.sin(dlon/2)
-        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+        dlat = math.radians(lat2 - lat1)
+        dlon = math.radians(lon2 - lon1)
+        a = math.sin(dlat / 2) * math.sin(dlat / 2) + math.cos(
+            math.radians(lat1)
+        ) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) * math.sin(dlon / 2)
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
         d = radius * c
         return d
 
@@ -487,7 +538,9 @@ class DwdWeather:
             SELECT s2.*
             FROM {table} s1
             LEFT JOIN {table} s2 ON (s1.station_id=s2.station_id AND s1.date_end=s1.date_end)
-            GROUP BY s1.station_id""".format(table=table)
+            GROUP BY s1.station_id""".format(
+            table=table
+        )
         c = self.db.cursor()
         for row in c.execute(sql):
             out.append(row)
@@ -510,30 +563,30 @@ class DwdWeather:
         closest = None
         closest_distance = 99999999999
         for station in self.stations():
-            d = self.haversine_distance((lon, lat),
-                (station["geo_lon"], station["geo_lat"]))
+            d = self.haversine_distance(
+                (lon, lat), (station["geo_lon"], station["geo_lat"])
+            )
             if d < closest_distance:
                 closest = station
                 closest_distance = d
         return closest
 
     def stations_geojson(self):
-        out = {
-            "type": "FeatureCollection",
-            "features": []
-        }
+        out = {"type": "FeatureCollection", "features": []}
         for station in self.stations():
-            out["features"].append({
-                "type": "Feature",
-                "properties": {
-                    "id": station["station_id"],
-                    "name": station["name"]
-                },
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [station["geo_lon"], station["geo_lat"]]
+            out["features"].append(
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "id": station["station_id"],
+                        "name": station["name"],
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [station["geo_lon"], station["geo_lat"]],
+                    },
                 }
-            })
+            )
         return json.dumps(out)
 
     def stations_csv(self, delimiter=","):
@@ -542,7 +595,15 @@ class DwdWeather:
         """
         csvfile = StringIO()
         # assemble field list
-        headers = ["station_id", "date_start", "date_end", "geo_lon", "geo_lat", "height", "name"]
+        headers = [
+            "station_id",
+            "date_start",
+            "date_end",
+            "geo_lon",
+            "geo_lat",
+            "height",
+            "name",
+        ]
         writer = csv.writer(csvfile, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL)
         writer.writerow(headers)
         stations = self.stations()

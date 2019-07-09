@@ -16,22 +16,21 @@ class DwdCdcKnowledge(object):
 
         # The different measurements for climate data
         measurements = [
-            {'key': 'TU', 'name': 'air_temperature'},
-            {'key': 'CS', 'name': 'cloud_type'},
-            {'key': 'N',  'name': 'cloudiness'},
-            {'key': 'TD', 'name': 'dew_point'},
-            {'key': 'TX', 'name': 'extreme_temperature'},
-            {'key': 'FX', 'name': 'extreme_wind'},
-            {'key': 'RR', 'name': 'precipitation'},
-            {'key': 'P0', 'name': 'pressure'},
-            {'key': 'EB', 'name': 'soil_temperature'},
-            {'key': 'ST', 'name': 'solar'},
-            {'key': 'SD', 'name': 'sun'},
-            {'key': 'VV', 'name': 'visibility'},
-            {'key': 'FF', 'name': 'wind'},
-            {'key': 'F',  'name': 'wind_synop'},
+            {"key": "TU", "name": "air_temperature"},
+            {"key": "CS", "name": "cloud_type"},
+            {"key": "N", "name": "cloudiness"},
+            {"key": "TD", "name": "dew_point"},
+            {"key": "TX", "name": "extreme_temperature"},
+            {"key": "FX", "name": "extreme_wind"},
+            {"key": "RR", "name": "precipitation"},
+            {"key": "P0", "name": "pressure"},
+            {"key": "EB", "name": "soil_temperature"},
+            {"key": "ST", "name": "solar"},
+            {"key": "SD", "name": "sun"},
+            {"key": "VV", "name": "visibility"},
+            {"key": "FF", "name": "wind"},
+            {"key": "F", "name": "wind_synop"},
         ]
-
 
         # The different resolutions for climate data
         class resolutions:
@@ -40,11 +39,10 @@ class DwdCdcKnowledge(object):
             class hourly:
 
                 # Which data set / resolution subfolder to use.
-                __folder__ = 'hourly'
+                __folder__ = "hourly"
 
                 # Which format does the timestamp of this resolution have?
                 __timestamp_format__ = "%Y%m%d%H"
-
 
                 """
                 ===============
@@ -81,11 +79,10 @@ class DwdCdcKnowledge(object):
                 Missing values are marked as -999. All dates given are in UTC.
                 """
                 air_temperature = (
-                    ("airtemp_quality_level", "int"),   # Quality level
-                    ("airtemp_temperature", "real"),    # Air temperature 2m
-                    ("airtemp_humidity", "real"),       # Relative humidity 2m
+                    ("airtemp_quality_level", "int"),  # Quality level
+                    ("airtemp_temperature", "real"),  # Air temperature 2m
+                    ("airtemp_humidity", "real"),  # Relative humidity 2m
                 )
-
 
                 """
                 ================
@@ -126,15 +123,14 @@ class DwdCdcKnowledge(object):
                 Missing values are marked as -999. All dates given are in UTC.
                 """
                 soil_temperature = (
-                    ("soiltemp_quality_level", "int"),      # Quality level
-                    ("soiltemp_temperature_002", "real"),   # Soil temperature 2cm
-                    ("soiltemp_temperature_005", "real"),   # Soil temperature 5cm
-                    ("soiltemp_temperature_010", "real"),   # Soil temperature 10cm
-                    ("soiltemp_temperature_020", "real"),   # Soil temperature 20cm
-                    ("soiltemp_temperature_050", "real"),   # Soil temperature 50cm
-                    ("soiltemp_temperature_100", "real"),   # Soil temperature 100cm
+                    ("soiltemp_quality_level", "int"),  # Quality level
+                    ("soiltemp_temperature_002", "real"),  # Soil temperature 2cm
+                    ("soiltemp_temperature_005", "real"),  # Soil temperature 5cm
+                    ("soiltemp_temperature_010", "real"),  # Soil temperature 10cm
+                    ("soiltemp_temperature_020", "real"),  # Soil temperature 20cm
+                    ("soiltemp_temperature_050", "real"),  # Soil temperature 50cm
+                    ("soiltemp_temperature_100", "real"),  # Soil temperature 100cm
                 )
-
 
                 """
                 =============
@@ -190,12 +186,11 @@ class DwdCdcKnowledge(object):
                     9   No precipitation measurement, form of precipitation cannot be determined.
                 """
                 precipitation = (
-                    ("precipitation_quality_level", "int"),      # Quality level
+                    ("precipitation_quality_level", "int"),  # Quality level
                     ("precipitation_height", "real"),
                     ("precipitation_fallen", "bool"),
                     ("precipitation_form", "int"),
                 )
-
 
                 """
                 ===
@@ -231,10 +226,9 @@ class DwdCdcKnowledge(object):
                 Missing values are marked as -999. All dates given are in UTC.
                 """
                 sun = (
-                    ("sun_quality_level", "int"),   # Quality level
-                    ("sun_duration", "real"),       # Hourly sunshine duration
+                    ("sun_quality_level", "int"),  # Quality level
+                    ("sun_duration", "real"),  # Hourly sunshine duration
                 )
-
 
                 """
                 ========
@@ -274,10 +268,9 @@ class DwdCdcKnowledge(object):
                 """
                 pressure = (
                     ("pressure_quality_level", "int"),  # Quality level
-                    ("pressure_normalized", "real"),    # Mean sea level pressure
-                    ("pressure_station", "real"),       # Pressure at station height
+                    ("pressure_normalized", "real"),  # Mean sea level pressure
+                    ("pressure_station", "real"),  # Pressure at station height
                 )
-
 
                 """
                 ====
@@ -319,11 +312,10 @@ class DwdCdcKnowledge(object):
 
                 """
                 wind = (
-                    ("wind_quality_level", "int"),   # Quality level
-                    ("wind_speed", "real"),         # Mean wind speed
-                    ("wind_direction", "int"),      # Mean wind direction
+                    ("wind_quality_level", "int"),  # Quality level
+                    ("wind_speed", "real"),  # Mean wind speed
+                    ("wind_direction", "int"),  # Mean wind direction
                 )
-
 
                 """
                 ==========
@@ -362,11 +354,10 @@ class DwdCdcKnowledge(object):
 
                 """
                 cloudiness = (
-                    ("cloudiness_quality_level", "int"),    # Quality level
-                    ("cloudiness_source", "str"),           # How measurement is taken
-                    ("cloudiness_total_cover", "int"),      # Total cloud cover
+                    ("cloudiness_quality_level", "int"),  # Quality level
+                    ("cloudiness_source", "str"),  # How measurement is taken
+                    ("cloudiness_total_cover", "int"),  # Total cloud cover
                 )
-
 
                 """
                 ==========
@@ -405,11 +396,10 @@ class DwdCdcKnowledge(object):
 
                 """
                 visibility = (
-                    ("visibility_quality_level", "int"),    # Quality level
-                    ("visibility_source", "str"),           # How measurement is taken
-                    ("visibility_value", "int"),            # Visibility
+                    ("visibility_quality_level", "int"),  # Quality level
+                    ("visibility_source", "str"),  # How measurement is taken
+                    ("visibility_value", "int"),  # Visibility
                 )
-
 
                 """
                 =====
@@ -449,25 +439,29 @@ class DwdCdcKnowledge(object):
 
                 """
                 solar = (
-                    ("solar_quality_level", "int"),     # Qualitaets_Niveau
-                    ("solar_duration", "int"),          # Hourly sum of longwave downward radiation
-                    ("solar_sky", "real"),              # Hourly sum of diffuse solar radiation
-                    ("solar_global", "real"),           # Hourly sum of solar incoming radiation
-                    ("solar_atmosphere", "real"),       # Hourly sum of sunshine duration
-                    ("solar_zenith", "real"),           # Solar zenith angle at mid of interval
-                    ("solar_end_of_interval", "datetime"),  # End of interval in local true solar time
+                    ("solar_quality_level", "int"),  # Qualitaets_Niveau
+                    (
+                        "solar_duration",
+                        "int",
+                    ),  # Hourly sum of longwave downward radiation
+                    ("solar_sky", "real"),  # Hourly sum of diffuse solar radiation
+                    ("solar_global", "real"),  # Hourly sum of solar incoming radiation
+                    ("solar_atmosphere", "real"),  # Hourly sum of sunshine duration
+                    ("solar_zenith", "real"),  # Solar zenith angle at mid of interval
+                    (
+                        "solar_end_of_interval",
+                        "datetime",
+                    ),  # End of interval in local true solar time
                 )
-
 
             # Temporal resolution: 10 minutes
             class minutes_10:
 
                 # Which data set / resolution subfolder to use.
-                __folder__ = '10_minutes'
+                __folder__ = "10_minutes"
 
                 # Which format does the timestamp of this resolution have?
                 __timestamp_format__ = "%Y%m%d%H%M"
-
 
                 """
                 ===============
@@ -497,14 +491,13 @@ class DwdCdcKnowledge(object):
                 Missing values are marked as -999. All dates given are in UTC.
                 """
                 air_temperature = (
-                    ("airtemp_quality_level", "int"),       # Quality level
-                    ("airtemp_pressure_station", "real"),   # Pressure at station height
-                    ("airtemp_temperature_200", "real"),    # Air temperature 2m
-                    ("airtemp_temperature_005", "real"),    # Air temperature 5cm
-                    ("airtemp_humidity", "real"),           # Relative humidity 2m
-                    ("airtemp_dewpoint", "real"),           # Dew point temperature 2m
+                    ("airtemp_quality_level", "int"),  # Quality level
+                    ("airtemp_pressure_station", "real"),  # Pressure at station height
+                    ("airtemp_temperature_200", "real"),  # Air temperature 2m
+                    ("airtemp_temperature_005", "real"),  # Air temperature 5cm
+                    ("airtemp_humidity", "real"),  # Relative humidity 2m
+                    ("airtemp_dewpoint", "real"),  # Dew point temperature 2m
                 )
-
 
             """
             Quality information
@@ -525,7 +518,6 @@ class DwdCdcKnowledge(object):
             Erroneous or suspicious values are identified and set to -999.
             """
 
-
         @classmethod
         def get_resolutions(cls):
             resolutions_map = OrderedDict()
@@ -544,6 +536,7 @@ class DwdCdcKnowledge(object):
     def as_dict(cls, what):
         content = {}
         for entry in dir(what):
-            if entry.startswith('__'): continue
+            if entry.startswith("__"):
+                continue
             content[entry] = getattr(what, entry)
         return content
