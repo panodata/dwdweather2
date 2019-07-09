@@ -44,7 +44,7 @@ class DwdWeather:
     # Observations in Germany.
     germany_climate_uri = baseuri + '/observations_germany/climate/{resolution}'
 
-    def __init__(self, resolution=None, category_names=None, **kwargs):
+    def __init__(self, resolution="hourly", category_names=None, **kwargs):
 
         # =================
         # Configure context
