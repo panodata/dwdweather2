@@ -5,6 +5,7 @@ dwdweather changelog
 in progress
 ===========
 - Update library usage example, fix #15. Thanks @Lukas-Kullmann!
+- Fix URI encoding woes
 
 
 2019-06-27 0.9.0

@@ -66,8 +66,8 @@ class DwdCdcClient:
         )
 
     def get_resource_index(self, uri, extension):
-        log.info("Requesting %s", uri)
-        response = self.http.get(uri + "/")
+        log.info(u'Requesting %s', uri)
+        response = self.http.get(uri + u'/')
         if response.status_code != 200:
             raise ValueError("Fetching resource {} failed".format(uri))
         resource_list = parse_htmllist(uri, extension, response.content)
@@ -82,9 +82,9 @@ class DwdCdcClient:
             category_name = category["name"]
             if category_name == "solar":
                 # workaround - solar has no subdirs
-                index_uri = "%s/%s" % (self.uri, category_name)
+                index_uri = u"%s/%s" % (self.uri, category_name)
             else:
-                index_uri = "%s/%s/recent" % (self.uri, category_name)
+                index_uri = u"%s/%s/recent" % (self.uri, category_name)
 
             try:
                 resource_list = self.get_resource_index(index_uri, "txt")
