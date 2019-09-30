@@ -4,10 +4,12 @@ dwdweather changelog
 
 in progress
 ===========
+
+2019-10-01 0.10.0
+=================
 - Update library usage example, fix #15. Thanks @Lukas-Kullmann!
 - Fix URI encoding woes
 - Add "now" timerange for "10_minutes" resolution
-
 
 2019-06-27 0.9.0
 =================
@@ -20,7 +22,6 @@ in progress
 2019-06-03 0.8.2
 ================
 - Reestablish Python 2.7 compatibility for ``setup.py``.
--
 
 2019-06-03 0.8.1
 ================
