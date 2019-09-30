@@ -16,7 +16,9 @@
 .. image:: https://assets.okfn.org/images/ok_buttons/os_80x15_orange_grey.png
     :target: https://okfn.org/opendata/
 
-|
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/python/black
+
 
 .. _dwdweather2-readme:
 
