@@ -4,6 +4,8 @@ dwdweather changelog
 
 in progress
 ===========
+- Update library usage example, fix #15. Thanks @Lukas-Kullmann!
+
 
 2019-06-27 0.9.0
 =================
