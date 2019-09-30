@@ -276,7 +276,7 @@ class DwdWeather:
                 )
         self.db.commit()
 
-    def import_measures(self, station_id, latest=True, historic=False):
+    def import_measures(self, station_id, current=False, latest=False, historic=False):
         """
         Load data from DWD server.
         Parameter:
@@ -294,6 +294,8 @@ class DwdWeather:
 
         # Compute timerange labels / subfolder names.
         timeranges = []
+        if current:
+            timeranges.append("now")
         if latest:
             timeranges.append("recent")
         if historic:
@@ -504,12 +506,14 @@ class DwdWeather:
             if out is None:
                 # cache miss
                 age = (datetime.utcnow() - timestamp).total_seconds() / 86400
-                if age < 360:
-                    self.import_measures(station_id, latest=True)
+                if age < 1:
+                    self.import_measures(station_id, current=True, latest=False, historic=False)
+                elif age < 360:
+                    self.import_measures(station_id, latest=True, historic=False)
                 elif age >= 360 and age <= 370:
                     self.import_measures(station_id, latest=True, historic=True)
                 else:
-                    self.import_measures(station_id, historic=True)
+                    self.import_measures(station_id, current=False, latest=False, historic=True)
                 return self.query(station_id, timestamp, recursion=(recursion + 1))
             c.close()
             return out

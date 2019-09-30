@@ -6,6 +6,7 @@ in progress
 ===========
 - Update library usage example, fix #15. Thanks @Lukas-Kullmann!
 - Fix URI encoding woes
+- Add "now" timerange for "10_minutes" resolution
 
 
 2019-06-27 0.9.0
