@@ -15,7 +15,7 @@ import traceback
 from tqdm import tqdm
 from copy import deepcopy
 from datetime import datetime
-from dateutil.parser import parse as parsedate
+from dateutil.parser import parse as parsedate, ParserError
 
 from dwdweather.client import DwdCdcClient
 from dwdweather.knowledge import DwdCdcKnowledge
@@ -435,11 +435,21 @@ class DwdWeather:
                 # Parse timestamp.
                 # FIXME: We should not store timestamps as integers but better use real datetimes.
                 try:
-                    timestamp_datetime = parsedate(timestamp_raw.replace("T", "").replace(":", ""))
+                    timestamp_sanitized = timestamp_raw.replace("T", "").replace(":", "")
+
+                    # If timestamp lacks minutes (like 2018112922),
+                    # let's add them to make the datetime parser happy.
+                    if len(timestamp_sanitized) == 10:
+                        timestamp_sanitized += '00'
+
+                    # Run sanitized timestamp through datatime parser
+                    # and reformat it into the appropriate format.
+                    timestamp_datetime = parsedate(timestamp_sanitized, ignoretz=True)
                     timestamp = int(timestamp_datetime.strftime(self.get_timestamp_format()))
 
-                except:
-                    log.exception('Parsing timestamp "{}" failed'.format(timestamp_raw))
+                except ParserError as ex:
+                    log.error('Parsing timestamp "{}" failed: {}'.format(timestamp_sanitized, ex))
+                    continue
 
                 dataset = []
 
