@@ -5,6 +5,16 @@ dwdweather changelog
 in progress
 ===========
 
+2019-11-04 0.11.0
+=================
+- Add an optional buffer-zone to ``nearest_station``.
+
+  The buffer zone let's you get more stations, that are nearby and not just the nearest.
+  It's optional and won't change existing methods.
+  Output is a list of stations.
+
+  See also #16. Thanks, @stianchris!
+
 2019-11-04 0.10.1
 =================
 - Refactor and improve main workhorse function ``import_measures_textfile``
