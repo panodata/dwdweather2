@@ -5,6 +5,12 @@ dwdweather changelog
 in progress
 ===========
 
+2019-11-04 0.10.1
+=================
+- Refactor and improve main workhorse function ``import_measures_textfile``
+  to fix import bug for "solar" data from the "hourly" category within the
+  "recent" timerange. Resolves #17. Thanks, @Nikolai10!
+
 2019-10-01 0.10.0
 =================
 - Update library usage example, fix #15. Thanks @Lukas-Kullmann!

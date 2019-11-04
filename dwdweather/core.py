@@ -15,6 +15,7 @@ import traceback
 from tqdm import tqdm
 from copy import deepcopy
 from datetime import datetime
+from dateutil.parser import parse as parsedate
 
 from dwdweather.client import DwdCdcClient
 from dwdweather.knowledge import DwdCdcKnowledge
@@ -144,8 +145,16 @@ class DwdWeather:
         user's home, where a cache database and config
         file will reside.
         """
+
         database_file = self.get_cache_database()
+        log.info('Using cache database {}'.format(database_file))
+
         self.db = sqlite3.connect(database_file)
+
+        # Enable debugging.
+        #self.db.set_trace_callback(print)
+        #self.db.set_trace_callback(None)
+
         self.db.row_factory = self.dict_factory
         c = self.db.cursor()
 
@@ -303,7 +312,7 @@ class DwdWeather:
 
         # Reporting.
         station_info = self.station_info(station_id)
-        log.info("Downloading measurements for station %d" % station_id)
+        log.info("Downloading measurements for station %d and timeranges %s" % (station_id, timeranges))
         log.info(
             "Station information: %s"
             % json.dumps(station_info, indent=2, sort_keys=True)
@@ -382,7 +391,7 @@ class DwdWeather:
 
         log.info('Importing "{}" data from "{}"'.format(category_label, result.uri))
 
-        # Create SQL template
+        # Create SQL template.
         tablename = self.get_measurement_table()
         fieldnames = []
         value_placeholders = []
@@ -408,59 +417,83 @@ class DwdWeather:
             if line == "" or line == "\x1a":
                 continue
             line = line.replace(";eor", "")
+            #print('Line:', line)
+
             parts = line.split(";")
             for n in range(len(parts)):
                 parts[n] = parts[n].strip()
 
             if count > 1:
 
-                # Parse station id.
-                parts[0] = int(parts[0])
+                # The first two fields are station id and timestamp in raw format.
+                station_id_raw = parts.pop(0)
+                timestamp_raw = parts.pop(0)
 
-                # Parse timestamp, ignore minutes.
-                # Fixme: Is this also true for resolution=10_minutes?
-                parts[1] = int(parts[1].replace("T", "").replace(":", ""))
+                # Parse station id.
+                station_id = int(station_id_raw)
+
+                # Parse timestamp.
+                # FIXME: We should not store timestamps as integers but better use real datetimes.
+                try:
+                    timestamp_datetime = parsedate(timestamp_raw.replace("T", "").replace(":", ""))
+                    timestamp = int(timestamp_datetime.strftime(self.get_timestamp_format()))
+
+                except:
+                    log.exception('Parsing timestamp "{}" failed'.format(timestamp_raw))
 
                 dataset = []
-                # station_id and datetime
-                # if category == "soil_temp":
-                #    print fields[category]
-                #    print parts
-                for n in range(2, len(parts)):
-                    (fieldname, fieldtype) = self.fields[category_name][(n - 2)]
-                    if parts[n] == "-999":
-                        parts[n] = None
+
+                # For debugging purposes.
+                # if category_name == "soil_temp":
+                #    print(self.fields[category_name])
+                #    print(parts)
+
+                for index, cell in enumerate(parts):
+                    (fieldname, fieldtype) = self.fields[category_name][index]
+                    if cell == "-999":
+                        cell = None
                     elif fieldtype == "real":
-                        parts[n] = float(parts[n])
+                        cell = float(cell)
                     elif fieldtype == "int":
                         try:
-                            parts[n] = int(parts[n])
+                            cell = int(cell)
                         except ValueError:
                             sys.stderr.write(
                                 "Error in converting field '%s', value '%s' to int.\n"
-                                % (fieldname, parts[n])
+                                % (fieldname, cell)
                             )
+
+                            # FIXME: Try to be more graceful here.
                             (t, val, trace) = sys.exc_info()
                             traceback.print_tb(trace)
-                            sys.exit()
+                            sys.exit(2)
+
                     elif fieldtype == "datetime":
-                        parts[n] = self.datetime_to_int(parts[n])
+                        cell = self.datetime_to_int(cell)
 
-                    dataset.append(parts[n])
+                    dataset.append(cell)
 
-                # station_id and datetime for WHERE clause
-                dataset.append(parts[0])
-                dataset.append(parts[1])
+                # "station_id" and "datetime" should go into the last
+                # two slots of the SQL template to be interpolated
+                # as constraints into the WHERE clause.
+                dataset.append(station_id)
+                dataset.append(timestamp)
 
-                # log.debug('SQL template: %s', sql_template)
-                # log.debug('Dataset: %s', dataset)
+                #print('Parts:', parts)
+                #print('Dataset:', dataset)
 
-                if self.get_measurement(parts[0], parts[1]):
+                if self.get_measurement(station_id, timestamp):
                     self.update_measurement(tablename, sets, dataset)
                 else:
                     self.insert_measurement(
                         tablename, fieldnames, value_placeholders, dataset
                     )
+
+                # Commit in batches.
+                if count % 500 == 0:
+                    self.db.commit()
+
+        # Commit all data.
         self.db.commit()
 
     def get_data_age(self):
@@ -495,7 +528,7 @@ class DwdWeather:
         """
         if recursion < 2:
             sql = (
-                "SELECT * FROM %s WHERE station_id=? AND datetime=?"
+                "SELECT * FROM %s WHERE station_id=? AND datetime LIKE ?"
                 % self.get_measurement_table()
             )
             c = self.db.cursor()
