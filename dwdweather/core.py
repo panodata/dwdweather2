@@ -595,8 +595,31 @@ class DwdWeather:
         c.execute(sql, (station_id,))
         return c.fetchone()
 
-    def nearest_station(self, lon, lat):
-        # Select most current stations datasets.
+    def nearest_station(self, lon, lat, surrounding=False):
+        """
+        Select most current stations datasets.
+
+        Parameters:
+        ----------
+
+            lon : float
+
+            lat : float
+
+            surrounding : float
+                adds a buffer-zone in meter on top of the most closest
+                distance, and returns a list with all stations inside this zone
+                (instead of just one station)
+
+        Example:
+        --------
+
+        >>> from dwdweather import DwdWeather
+        >>> dw = DwdWeather(resolution="hourly")
+        >>> dw.nearest_station(lon=7.0, lat=51.0, surrounding=10000)
+
+        """
+
         closest = None
         closest_distance = 99999999999
         for station in self.stations():
@@ -606,6 +629,19 @@ class DwdWeather:
             if d < closest_distance:
                 closest = station
                 closest_distance = d
+
+        if surrounding:
+            closest1 = []
+            closest_distance = closest_distance+surrounding
+            i = 0
+            for station in self.stations():
+                d = self.haversine_distance(
+                    (lon, lat), (station["geo_lon"], station["geo_lat"])
+                )
+                if d < closest_distance:
+                    closest1.append(station)
+                    i += 1
+            closest = closest1
         return closest
 
     def stations_geojson(self):
