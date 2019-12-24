@@ -466,7 +466,7 @@ class DwdWeather:
                         cell = float(cell)
                     elif fieldtype == "int":
                         try:
-                            cell = int(cell)
+                            cell = int(float(cell))
                         except ValueError:
                             sys.stderr.write(
                                 "Error in converting field '%s', value '%s' to int.\n"
