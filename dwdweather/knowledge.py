@@ -498,6 +498,40 @@ class DwdCdcKnowledge(object):
                     ("airtemp_humidity", "real"),  # Relative humidity 2m
                     ("airtemp_dewpoint", "real"),  # Dew point temperature 2m
                 )
+                """
+                =====
+                Solar
+                =====
+
+                Documentation
+                -------------
+
+                - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/solar/DESCRIPTION_obsgermany_climate_hourly_solar_en.pdf
+
+                Fields
+                ------
+                ::
+
+                    Field               Description                               Format or unit
+                    STATIONS_ID         Station identification number             Integer
+                    MESS_DATUM          Measurement time                          YYYYMMDDHH
+                    QN                  Quality level                             Integer: 1-10 and -999, for coding see paragraph "Quality information" in PDF.
+                    DS_10               10min-sum of diffuse solar radiation      J/cm^2
+                    GS_10               10min-sum of solar incoming radiation     J/cm^2
+                    SD_10               10min-sum of sunshine duration            h
+                    LS_10               10min-sum of longwave downward radiation  J/cm^2
+                    eor                 End of record, can be ignored
+
+                Missing values are marked as -999. All dates given are in UTC.
+
+                """
+                solar = (
+                    ("solar_quality_level", "int"),  # Qualitaets_Niveau
+                    ("solar_sky", "real"),  # 10 minutes sum of diffuse solar radiation
+                    ("solar_global", "real"),  # 10 minutes sum of solar incoming radiation
+                    ("solar_duration", "real"),  # 10 minutes sum of sunshine duration
+                    ("solar_atmosphere", "real"), # 10 minutes sum of longwave downward radiation
+                )
 
             """
             Quality information
