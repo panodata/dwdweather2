@@ -80,7 +80,7 @@ class DwdCdcClient:
         log.info("Loading station data from CDC")
         for category in categories:
             category_name = category["name"]
-            if category_name == "solar":
+            if category_name == "solar" and self.resolution == "hourly":
                 # workaround - solar has no subdirs
                 index_uri = u"%s/%s" % (self.uri, category_name)
             else:
@@ -146,7 +146,7 @@ class DwdCdcClient:
                 for thing in download_zip(uri):
                     yield thing
 
-        if category_name == "solar":
+        if category_name == "solar" and self.resolution == "hourly":
             index_uri = "%s/%s" % (self.uri, category_name)
             resource_uri_effective = find_resource_file(
                 index_uri, "_%05d_" % station_id
