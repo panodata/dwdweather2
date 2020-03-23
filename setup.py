@@ -8,7 +8,7 @@ README = open(os.path.join(here, "README.rst"), encoding="UTF-8").read()
 
 setup(
     name="dwdweather2",
-    version="0.11.1",
+    version="0.12.0",
     description="Python client to access weather data from Deutscher Wetterdienst (DWD), "
     "the federal meteorological service in Germany.",
     long_description=README,
