@@ -128,6 +128,7 @@ class DwdCdcClient:
             try:
                 resource_list = self.get_resource_index(index_uri, "zip")
             except:
+                log.exception('Could not acquire resource from {}'.format(index_uri))
                 return
 
             # Get directory contents.

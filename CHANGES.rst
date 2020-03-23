@@ -5,6 +5,7 @@ dwdweather changelog
 in progress
 ===========
 
+- Improve error logging
 2019-11-04 0.11.1
 =================
 - Improve datetime parsing as it had woes from the last refactoring.
