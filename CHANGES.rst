@@ -5,7 +5,12 @@ dwdweather changelog
 in progress
 ===========
 
+
+2020-03-23 0.12.0
+=================
 - Improve error logging
+- Add ``10_minutes`` resolution of ``solar`` category. Thanks, @arneki!
+
 2019-11-04 0.11.1
 =================
 - Improve datetime parsing as it had woes from the last refactoring.
