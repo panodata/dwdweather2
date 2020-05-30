@@ -15,7 +15,7 @@ import traceback
 from tqdm import tqdm
 from copy import deepcopy
 from datetime import datetime
-from dateutil.parser import parse as parsedate, ParserError
+from dateutil.parser import parse as parsedate
 
 from dwdweather.client import DwdCdcClient
 from dwdweather.knowledge import DwdCdcKnowledge
@@ -447,7 +447,7 @@ class DwdWeather:
                     timestamp_datetime = parsedate(timestamp_sanitized, ignoretz=True)
                     timestamp = int(timestamp_datetime.strftime(self.get_timestamp_format()))
 
-                except ParserError as ex:
+                except Exception as ex:
                     log.error('Parsing timestamp "{}" failed: {}'.format(timestamp_sanitized, ex))
                     continue
 

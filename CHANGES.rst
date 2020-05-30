@@ -1,10 +1,15 @@
-####################
-dwdweather changelog
-####################
+#####################
+dwdweather2 changelog
+#####################
 
 in progress
 ===========
 
+
+2020-05-30 0.12.1
+=================
+- Be compatible with ``python-dateutil==2.8.0``, which is still the
+  default release for all Anaconda installations. Thanks, @mmaelicke!
 
 2020-03-23 0.12.0
 =================
