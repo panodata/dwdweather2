@@ -55,13 +55,13 @@ setup(
     "grafana",
     packages=find_packages(),
     include_package_data=True,
+    python_requires='>=3.3',
     install_requires=[
-        "tqdm>=4.32,<4.33",
+        "tqdm>=4.32",
         "python-dateutil>=2.8,<2.9",
         "requests>=2.22,<2.23",
         "requests-cache>=0.5,<0.6",
-        #'htmllistparse==0.5',     # Needs min. Python 3.3
-        "beautifulsoup4>=4.7,<4.8",
+        'htmllistparse>=0.5.2,<0.6.0',
     ],
     entry_points={"console_scripts": ["dwdweather = dwdweather.commands:run"]},
 )

@@ -2,7 +2,7 @@
 import sys
 import logging
 import argparse
-from bs4 import BeautifulSoup
+import htmllistparse
 
 
 def setup_logging(level=logging.INFO):
@@ -20,17 +20,12 @@ def float_range(min, max):
     return check_range
 
 
-def parse_htmllist(baseurl, extension, content):
+def fetch_html_file_list(baseurl, extension):
 
-    # Python 3.3
-    """
-    import htmllistparse
-    cwd, listing = htmllistparse.parse(content)
-    """
-
-    soup = BeautifulSoup(content, "html.parser")
-    return [
-        baseurl + "/" + node.get("href")
-        for node in soup.find_all("a")
-        if node.get("href").endswith(extension)
+    cwd, listing = htmllistparse.fetch_listing(baseurl, timeout=10)
+    result = [
+        baseurl + "/" + item.name
+        for item in listing
+        if item.name.endswith(extension)
     ]
+    return result

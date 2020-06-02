@@ -4,6 +4,8 @@ dwdweather2 changelog
 
 in progress
 ===========
+- Use "htmllistparse" for fetching directory index.
+  This also drops support for Python 2.
 
 
 2020-05-30 0.12.1

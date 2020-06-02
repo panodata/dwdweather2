@@ -11,7 +11,7 @@ from requests_cache import CachedSession
 
 from dwdweather import __appname__ as APP_NAME
 from dwdweather import __version__ as APP_VERSION
-from dwdweather.util import parse_htmllist
+from dwdweather.util import fetch_html_file_list
 
 log = logging.getLogger(__name__)
 
@@ -67,10 +67,7 @@ class DwdCdcClient:
 
     def get_resource_index(self, uri, extension):
         log.info(u'Requesting %s', uri)
-        response = self.http.get(uri + u'/')
-        if response.status_code != 200:
-            raise ValueError("Fetching resource {} failed".format(uri))
-        resource_list = parse_htmllist(uri, extension, response.content)
+        resource_list = fetch_html_file_list(uri, extension)
         return resource_list
 
     def get_stations(self, categories):
