@@ -35,6 +35,25 @@ class DwdCdcKnowledge(object):
         # The different resolutions for climate data
         class resolutions:
 
+            """
+            Quality information
+            The quality level "Qualitätsniveau" (QN) given here applies
+            to the respective columns and describes the method of quality control.
+
+            Quality level (column header: QN_X)::
+
+                 1 only formal control
+                 2 controlled with individually defined criteria
+                 3 automatic control and correction
+                 5 historic, subjective procedures
+                 7 second control done, before correction
+                 8 quality control outside ROUTINE
+                 9 not all parameters corrected
+                10 quality control finished, all corrections finished
+
+            Erroneous or suspicious values are identified and set to -999.
+            """
+
             # Temporal resolution: hourly
             class hourly:
 
@@ -79,9 +98,9 @@ class DwdCdcKnowledge(object):
                 Missing values are marked as -999. All dates given are in UTC.
                 """
                 air_temperature = (
-                    ("airtemp_quality_level", "int"),  # Quality level
-                    ("airtemp_temperature", "real"),  # Air temperature 2m
-                    ("airtemp_humidity", "real"),  # Relative humidity 2m
+                    ("air_temperature_quality_level", "int"),   # Quality level
+                    ("air_temperature_200", "real"),            # Air temperature 2m
+                    ("relative_humidity_200", "real"),          # Relative humidity 2m
                 )
 
                 """
@@ -112,8 +131,8 @@ class DwdCdcKnowledge(object):
                     STATIONS_ID         Station identification number   Integer
                     MESS_DATUM          Measurement time                YYYYMMDDHH
                     QN_2                Quality level                   Integer: 1-10 and -999, for coding see paragraph "Quality information" in PDF.
-                    V_TE002             Soil temperature in   2 cm depth  °C
-                    V_TE005             Soil temperature in   5 cm depth  °C
+                    V_TE002             Soil temperature in   2 cm depth °C
+                    V_TE005             Soil temperature in   5 cm depth °C
                     V_TE010             Soil temperature in  10 cm depth °C
                     V_TE020             Soil temperature in  20 cm depth °C
                     V_TE050             Soil temperature in  50 cm depth °C
@@ -123,13 +142,13 @@ class DwdCdcKnowledge(object):
                 Missing values are marked as -999. All dates given are in UTC.
                 """
                 soil_temperature = (
-                    ("soiltemp_quality_level", "int"),  # Quality level
-                    ("soiltemp_temperature_002", "real"),  # Soil temperature 2cm
-                    ("soiltemp_temperature_005", "real"),  # Soil temperature 5cm
-                    ("soiltemp_temperature_010", "real"),  # Soil temperature 10cm
-                    ("soiltemp_temperature_020", "real"),  # Soil temperature 20cm
-                    ("soiltemp_temperature_050", "real"),  # Soil temperature 50cm
-                    ("soiltemp_temperature_100", "real"),  # Soil temperature 100cm
+                    ("soil_temperature_quality_level", "int"),  # Quality level
+                    ("soil_temperature_002", "real"),  # Soil temperature 2cm
+                    ("soil_temperature_005", "real"),  # Soil temperature 5cm
+                    ("soil_temperature_010", "real"),  # Soil temperature 10cm
+                    ("soil_temperature_020", "real"),  # Soil temperature 20cm
+                    ("soil_temperature_050", "real"),  # Soil temperature 50cm
+                    ("soil_temperature_100", "real"),  # Soil temperature 100cm
                 )
 
                 """
@@ -409,6 +428,7 @@ class DwdCdcKnowledge(object):
                 Documentation
                 -------------
 
+                - Description:          Hourly station observations of solar incoming (total/diffuse) and longwave downward radiation for Germany
                 - Temporal coverage:    01.01.1937 - month before last month
                 - Temporal resolution:  hourly
                 - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/solar/DESCRIPTION_obsgermany_climate_hourly_solar_en.pdf
@@ -421,15 +441,15 @@ class DwdCdcKnowledge(object):
                     STATIONS_ID         Station identification number   Integer
                     MESS_DATUM          Measurement time                YYYYMMDDHH
                     QN_592              Quality level                   Integer: 1-10 and -999, for coding see paragraph "Quality information" in PDF.
-                    ATMO_LBERG          Hourly sum of longwave          J/cm^2
+                    ATMO_STRAHL         Hourly sum of longwave          J/cm^2
                                         downward radiation
-                    FD_LBERG            Hourly sum of diffuse           J/cm^2
+                    FD_STRAHL           Hourly sum of diffuse           J/cm^2
                                         solar radiation
-                    FG_LBERG            Hourly sum of solar             J/cm^2
+                    FG_STRAHL           Hourly sum of solar             J/cm^2
                                         incoming radiation
-                    SD_LBERG            Hourly sum of                   min
+                    SD_STRAHL           Hourly sum of                   min
                                         sunshine duration
-                    ZENIT               Solar zenith angle at mid       degree
+                    ZENITH              Solar zenith angle at mid       degree
                                         of interval
                     MESS_DATUM_WOZ      End of interval in local        YYYYMMDDHH:mm
                                         true solar time
@@ -439,19 +459,13 @@ class DwdCdcKnowledge(object):
 
                 """
                 solar = (
-                    ("solar_quality_level", "int"),  # Qualitaets_Niveau
-                    (
-                        "solar_duration",
-                        "int",
-                    ),  # Hourly sum of longwave downward radiation
-                    ("solar_sky", "real"),  # Hourly sum of diffuse solar radiation
-                    ("solar_global", "real"),  # Hourly sum of solar incoming radiation
-                    ("solar_atmosphere", "real"),  # Hourly sum of sunshine duration
-                    ("solar_zenith", "real"),  # Solar zenith angle at mid of interval
-                    (
-                        "solar_end_of_interval",
-                        "datetime",
-                    ),  # End of interval in local true solar time
+                    ("solar_quality_level", "int"),         # Quality information
+                    ("solar_atmosphere", "real"),           # Hourly sum of longwave downward radiation
+                    ("solar_dhi", "real"),                  # Hourly sum of Diffuse Horizontal Irradiance (DHI)
+                    ("solar_ghi", "real"),                  # Hourly sum of Global Horizontal Irradiance (GHI)
+                    ("solar_sunshine", "int"),              # Hourly sum of sunshine duration
+                    ("solar_zenith", "real"),               # Solar zenith angle at mid of interval
+                    ("solar_end_of_interval", "datetime"),  # End of interval in local true solar time
                 )
 
             # Temporal resolution: 10 minutes
@@ -491,12 +505,12 @@ class DwdCdcKnowledge(object):
                 Missing values are marked as -999. All dates given are in UTC.
                 """
                 air_temperature = (
-                    ("airtemp_quality_level", "int"),  # Quality level
-                    ("airtemp_pressure_station", "real"),  # Pressure at station height
-                    ("airtemp_temperature_200", "real"),  # Air temperature 2m
-                    ("airtemp_temperature_005", "real"),  # Air temperature 5cm
-                    ("airtemp_humidity", "real"),  # Relative humidity 2m
-                    ("airtemp_dewpoint", "real"),  # Dew point temperature 2m
+                    ("air_temperature_quality_level", "int"),       # Quality level
+                    ("pressure_station", "real"),                   # Pressure at station height
+                    ("air_temperature_200", "real"),                # Air temperature 2m
+                    ("air_temperature_005", "real"),                # Air temperature 5cm
+                    ("relative_humidity_200", "real"),              # Relative humidity 2m
+                    ("dewpoint_temperature_200", "real"),           # Dew point temperature 2m
                 )
                 """
                 =====
@@ -506,7 +520,10 @@ class DwdCdcKnowledge(object):
                 Documentation
                 -------------
 
-                - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/solar/DESCRIPTION_obsgermany_climate_hourly_solar_en.pdf
+                - Description:          Recent 10-minute station observations of solar incoming radiation, longwavedownward radiation and sunshine duration for Germany
+                - Temporal coverage:    rolling: 500 days before yesterday - month before last month
+                - Temporal resolution:  10 minutes sampling interval
+                - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/10_minutes/solar/recent/DESCRIPTION_obsgermany_climate_10min_solar_recent_en.pdf
 
                 Fields
                 ------
@@ -526,31 +543,12 @@ class DwdCdcKnowledge(object):
 
                 """
                 solar = (
-                    ("solar_quality_level", "int"),  # Qualitaets_Niveau
-                    ("solar_sky", "real"),  # 10 minutes sum of diffuse solar radiation
-                    ("solar_global", "real"),  # 10 minutes sum of solar incoming radiation
-                    ("solar_duration", "real"),  # 10 minutes sum of sunshine duration
-                    ("solar_atmosphere", "real"), # 10 minutes sum of longwave downward radiation
+                    ("solar_quality_level", "int"),         # Quality information
+                    ("solar_dhi", "real"),                  # 10 minutes sum of Diffuse Horizontal Irradiance (DHI)
+                    ("solar_ghi", "real"),                  # 10 minutes sum of Global Horizontal Irradiance (GHI)
+                    ("solar_sunshine", "real"),             # 10 minutes sum of sunshine duration
+                    ("solar_atmosphere", "real"),           # 10 minutes sum of longwave downward radiation
                 )
-
-            """
-            Quality information
-            The quality level "Qualitätsniveau" (QN) given here applies
-            to the respective columns and describes the method of quality control.
-
-            Quality level (column header: QN_X)::
-
-                 1 only formal control
-                 2 controlled with individually defined criteria
-                 3 automatic control and correction
-                 5 historic, subjective procedures
-                 7 second control done, before correction
-                 8 quality control outside ROUTINE
-                 9 not all parameters corrected
-                10 quality control finished, all corrections finished
-
-            Erroneous or suspicious values are identified and set to -999.
-            """
 
         @classmethod
         def get_resolutions(cls):
