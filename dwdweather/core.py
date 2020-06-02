@@ -625,8 +625,8 @@ class DwdWeather:
         --------
 
         >>> from dwdweather import DwdWeather
-        >>> dw = DwdWeather(resolution="hourly")
-        >>> dw.nearest_station(lon=7.0, lat=51.0, surrounding=10000)
+        >>> dwd = DwdWeather(resolution="hourly")
+        >>> dwd.nearest_station(lon=7.0, lat=51.0, surrounding=10000)
 
         """
 

@@ -16,17 +16,17 @@ log = logging.getLogger(__name__)
 
 def run():
     def get_station(args):
-        dw = DwdWeather(
+        dwd = DwdWeather(
             resolution=args.resolution,
             category_names=args.categories,
             cache_path=args.cache_path,
             reset_cache=args.reset_cache,
         )
-        output = json.dumps(dw.nearest_station(lon=args.lon, lat=args.lat), indent=4)
+        output = json.dumps(dwd.nearest_station(lon=args.lon, lat=args.lat), indent=4)
         print(output)
 
     def get_stations(args):
-        dw = DwdWeather(
+        dwd = DwdWeather(
             resolution=args.resolution,
             category_names=args.categories,
             cache_path=args.cache_path,
@@ -34,11 +34,11 @@ def run():
         )
         output = ""
         if args.type == "geojson":
-            output = dw.stations_geojson()
+            output = dwd.stations_geojson()
         elif args.type == "csv":
-            output = dw.stations_csv()
+            output = dwd.stations_csv()
         elif args.type == "plain":
-            output = dw.stations_csv(delimiter="\t")
+            output = dwd.stations_csv(delimiter="\t")
         if args.output_path is None:
             print(output)
         else:
@@ -49,7 +49,7 @@ def run():
     def get_weather(args):
 
         # Workhorse
-        dw = DwdWeather(
+        dwd = DwdWeather(
             resolution=args.resolution,
             category_names=args.categories,
             cache_path=args.cache_path,
@@ -67,7 +67,7 @@ def run():
                 **locals()
             )
         )
-        results = dw.query(station_id, timestamp)
+        results = dwd.query(station_id, timestamp)
         print(json.dumps(results, indent=4, sort_keys=True))
 
     argparser = argparse.ArgumentParser(

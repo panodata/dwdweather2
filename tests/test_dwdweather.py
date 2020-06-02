@@ -7,7 +7,7 @@ def test_dwdclass_init_no_args():
     """
     Test class can be initialized without arguments.
     """
-    dw = DwdWeather()
+    dwd = DwdWeather()
 
 
 @pytest.mark.parametrize("resolution", ["hourly", "10_minutes"])
@@ -15,13 +15,13 @@ def test_dwdclass_init(resolution):
     """
     Test class can be initialized with plausible resolutions.
     """
-    dw = DwdWeather(resolution=resolution)
+    dwd = DwdWeather(resolution=resolution)
 
 
 def test_hourly_recent_base():
     # hourly, 2020-06-01T08, Aachen
-    dw = DwdWeather(resolution='hourly')
-    result = dw.query(44, datetime(2020, 6, 1, 8))
+    dwd = DwdWeather(resolution='hourly')
+    result = dwd.query(44, datetime(2020, 6, 1, 8))
     assert result['datetime'] == 2020060108
     assert result['station_id'] == 44
     assert result['air_temperature_200'] == 15.3
@@ -40,8 +40,8 @@ def test_hourly_recent_base():
 
 def test_hourly_recent_more():
     # hourly, 2020-06-01T08
-    dw = DwdWeather(resolution='hourly')
-    result = dw.query(96, datetime(2020, 6, 1, 8))
+    dwd = DwdWeather(resolution='hourly')
+    result = dwd.query(96, datetime(2020, 6, 1, 8))
     assert result['datetime'] == 2020060108
     assert result['station_id'] == 96
     assert result['air_temperature_200'] == 18.4
@@ -64,8 +64,8 @@ def test_hourly_recent_more():
 
 def test_hourly_recent_solar():
     # hourly, 2020-05-19T08, Zugspitze
-    dw = DwdWeather(resolution='hourly')
-    result = dw.query(5792, datetime(2020, 5, 19, 8))
+    dwd = DwdWeather(resolution='hourly')
+    result = dwd.query(5792, datetime(2020, 5, 19, 8))
     assert result['datetime'] == 2020051908
     assert result['station_id'] == 5792
     assert result['solar_dhi'] is None
@@ -77,8 +77,8 @@ def test_hourly_recent_solar():
 
 def test_10_minutes_recent_base():
     # 10 minutes, 2020-06-01T08:00, Aachen
-    dw = DwdWeather(resolution='10_minutes')
-    result = dw.query(44, datetime(2020, 6, 1, 8, 0))
+    dwd = DwdWeather(resolution='10_minutes')
+    result = dwd.query(44, datetime(2020, 6, 1, 8, 0))
     assert result['datetime'] == 202006010800
     assert result['station_id'] == 44
     assert result['air_temperature_005'] == 21.2
@@ -90,8 +90,8 @@ def test_10_minutes_recent_base():
 
 def test_10_minutes_recent_more():
     # 10 minutes, 2020-06-01T08:00, Zugspitze
-    dw = DwdWeather(resolution='10_minutes')
-    result = dw.query(5792, datetime(2020, 6, 1, 8, 0))
+    dwd = DwdWeather(resolution='10_minutes')
+    result = dwd.query(5792, datetime(2020, 6, 1, 8, 0))
     assert result['datetime'] == 202006010800
     assert result['station_id'] == 5792
     assert result['pressure_station'] == 713.3
