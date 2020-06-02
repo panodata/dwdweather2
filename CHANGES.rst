@@ -8,6 +8,7 @@ in progress
   This also drops support for Python 2.
 - Naming things
 - Update knowledgebase, adjust some field names
+- Add some integration tests
 
 
 2020-05-30 0.12.1

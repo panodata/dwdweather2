@@ -30,6 +30,13 @@ setup-virtualenv:
 release: bumpversion push sdist pypi-upload
 
 
+# ----
+# Test
+# ----
+test: install-tests
+	$(pytest)
+
+
 # ===============
 # Utility targets
 # ===============
@@ -50,3 +57,7 @@ install-doctools: setup-virtualenv
 
 install-releasetools: setup-virtualenv
 	@$(pip) install --quiet --requirement requirements-release.txt --upgrade
+
+install-tests: setup-virtualenv
+	@$(pip) install --quiet --requirement requirements-dev.txt --upgrade
+	@$(pip) install --quiet -e.
