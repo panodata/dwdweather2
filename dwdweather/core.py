@@ -28,7 +28,7 @@ the federal meteorological service in Germany.
 
 See Github repository for latest version:
 
-    https://github.com/hiveeyes/dwdweather2
+    https://github.com/panodata/dwdweather2
 
 Licensed under the MIT license. See file ``LICENSE`` for details.
 """

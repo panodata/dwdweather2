@@ -1,11 +1,11 @@
 .. image:: https://img.shields.io/badge/Python-2.7-green.svg
-    :target: https://github.com/hiveeyes/dwdweather2
+    :target: https://github.com/panodata/dwdweather2
 
 .. image:: https://img.shields.io/pypi/v/dwdweather2.svg
     :target: https://pypi.org/project/dwdweather2/
 
-.. image:: https://img.shields.io/github/tag/hiveeyes/dwdweather2.svg
-    :target: https://github.com/hiveeyes/dwdweather2
+.. image:: https://img.shields.io/github/tag/panodata/dwdweather2.svg
+    :target: https://github.com/panodata/dwdweather2
 
 .. image:: https://assets.okfn.org/images/ok_buttons/od_80x15_red_green.png
     :target: https://okfn.org/opendata/

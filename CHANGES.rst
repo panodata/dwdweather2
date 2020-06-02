@@ -6,6 +6,7 @@ in progress
 ===========
 - Use "htmllistparse" for fetching directory index.
   This also drops support for Python 2.
+- Naming things
 
 
 2020-05-30 0.12.1

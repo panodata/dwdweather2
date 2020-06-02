@@ -44,7 +44,7 @@ setup(
     ],
     author="Marian Steinbach",
     author_email="marian@sendung.de",
-    url="https://github.com/hiveeyes/dwdweather2",
+    url="https://github.com/panodata/dwdweather2",
     keywords="dwd cdc deutscher wetterdienst climate data center weather "
     "opendata data acquisition transformation export "
     "geospatial temporal timeseries "
