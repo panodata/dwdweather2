@@ -9,7 +9,7 @@ Prio 1
 - [o] Use ``appdirs`` in ``get_cache_path``
 - [o] Cache does not honor category selection
 - [o] Retrieve information for multiple stations
-- [o] Make ready for Python3
+- [x] Get ready for Python3
 
 
 ======
@@ -25,6 +25,12 @@ Prio 2
     - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/subdaily/standard_format/qualitaetsbytes.pdf
     - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/subdaily/standard_format/code_kl.pdf
     - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/subdaily/standard_format/download_legende_klkxformat.pdf
+
+- [o] Import more data::
+
+    - hourly: cloud_type, dew_point, wind_synop
+    - 10_minutes: precipitation, wind, extreme_temperature, extreme_wind
+    - daily: more_precip, water_equiv, weather_phenomena
 
 
 ======
