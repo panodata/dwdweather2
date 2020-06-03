@@ -4,13 +4,16 @@ dwdweather2 changelog
 
 in progress
 ===========
+
+
+2020-06-03 0.13.0
+=================
 - Use "htmllistparse" for fetching directory index.
   This also drops support for Python 2.
 - Naming things
 - Update knowledgebase, adjust some field names
 - Add some integration tests
 - Add data set for accessing "daily" resolution
-
 
 2020-05-30 0.12.1
 =================
