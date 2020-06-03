@@ -9,6 +9,7 @@ in progress
 - Naming things
 - Update knowledgebase, adjust some field names
 - Add some integration tests
+- Add data set for accessing "daily" resolution
 
 
 2020-05-30 0.12.1

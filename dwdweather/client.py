@@ -7,6 +7,7 @@ import logging
 from urllib.parse import urlparse
 from zipfile import ZipFile
 
+from requests import HTTPError
 from requests_cache import CachedSession
 
 from dwdweather import __appname__ as APP_NAME
@@ -26,7 +27,7 @@ class DwdCdcClient:
 
     def __init__(self, resolution, cache_path):
 
-        # Data set selector by resolution (houry, 10_minutes).
+        # Data set selector by resolution (daily, hourly, 10_minutes).
         self.resolution = resolution
 
         # HTTP client.
@@ -67,7 +68,14 @@ class DwdCdcClient:
 
     def get_resource_index(self, uri, extension):
         log.info(u'Requesting %s', uri)
-        resource_list = fetch_html_file_list(uri, extension)
+        try:
+            resource_list = fetch_html_file_list(uri, extension)
+        except HTTPError as ex:
+            if ex.response.status_code == 404:
+                #log.warning('Resource {} not found'.format(uri))
+                resource_list = []
+            else:
+                raise
         return resource_list
 
     def get_stations(self, categories):
@@ -77,11 +85,13 @@ class DwdCdcClient:
         log.info("Loading station data from CDC")
         for category in categories:
             category_name = category["name"]
-            if category_name == "solar" and self.resolution == "hourly":
+            category_folder = category.get("folder", category_name)
+
+            if category_name == "solar" and self.resolution in ["daily", "hourly"]:
                 # workaround - solar has no subdirs
-                index_uri = u"%s/%s" % (self.uri, category_name)
+                index_uri = u"%s/%s" % (self.uri, category_folder)
             else:
-                index_uri = u"%s/%s/recent" % (self.uri, category_name)
+                index_uri = u"%s/%s/recent" % (self.uri, category_folder)
 
             try:
                 resource_list = self.get_resource_index(index_uri, "txt")
@@ -104,6 +114,7 @@ class DwdCdcClient:
     def get_measurements(self, station_id, category, timeranges):
 
         category_name = category["name"]
+        category_folder = category.get("folder", category_name)
 
         def download_zip(uri):
             log.info("Fetching resource {}".format(uri))
@@ -144,7 +155,7 @@ class DwdCdcClient:
                 for thing in download_zip(uri):
                     yield thing
 
-        if category_name == "solar" and self.resolution == "hourly":
+        if category_name == "solar" and self.resolution in ["daily", "hourly"]:
             index_uri = "%s/%s" % (self.uri, category_name)
             resource_uri_effective = find_resource_file(
                 index_uri, "_%05d_" % station_id
@@ -158,7 +169,7 @@ class DwdCdcClient:
                 if timerange == "historical":
                     timerange_suffix = "hist"
 
-                index_uri = "%s/%s/%s" % (self.uri, category_name, timerange)
+                index_uri = "%s/%s/%s" % (self.uri, category_folder, timerange)
                 resource_uri_effective = find_resource_file(
                     index_uri, "_%05d_" % station_id
                 )

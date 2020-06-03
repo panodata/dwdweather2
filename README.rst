@@ -45,13 +45,17 @@ Synopsis
 Command line usage
 ==================
 
+Get all stations with ``daily`` resolution::
+
+    dwdweather stations --resolution=daily
+
 Get all stations with ``hourly`` resolution (default)::
 
-    dwdweather stations
+    dwdweather stations --resolution=hourly
 
 Get all stations with ``10_minutes`` resolution::
 
-    dwdweather stations --resolution 10_minutes
+    dwdweather stations --resolution=10_minutes
 
 Get closest station (first argument is longitude, second is latitude)::
 
@@ -76,6 +80,14 @@ To restrict the import to specified categories, run the program like::
 Finally, to drop the cache database before performing any work, use the ``--reset-cache`` option::
 
     dwdweather stations --reset-cache
+
+Choose dataset with ``daily`` resolution::
+
+    dwdweather weather 44 2020-06-01 --resolution=daily
+
+Choose dataset with ``hourly`` resolution::
+
+    dwdweather weather 44 2020-06-01T08 --resolution=hourly
 
 Choose dataset with ``10_minutes`` resolution::
 
@@ -139,28 +151,25 @@ Licenses
 
 Code license
 ============
-Licensed under the MIT license. See file ``LICENSE`` for details.
+Licensed under the MIT license. See `LICENSE <https://github.com/panodata/dwdweather2/blob/master/LICENSE>`__ for details.
 
 Data license
 ============
-The DWD has information about their re-use policy in
+The DWD has information about their terms of use policy in
 `German <https://www.dwd.de/DE/service/copyright/copyright_node.html>`__
 and
 `English <https://www.dwd.de/EN/service/copyright/copyright_node.html>`__.
 
 
-******
-Status
-******
-This piece of software is in a very early stage. No test cases yet. Only
-tested with Python 3.6. Use at your own risk.
+*******************
+Project information
+*******************
 
 Credits
 =======
-Thanks to `Marian Steinbach <https://github.com/marians>`__, `Philipp
-Klaus <https://github.com/pklaus>`__ and all people from
-`DWD <https://www.dwd.de/>`__.
+Thanks to `Marian Steinbach <https://github.com/marians>`__, all
+other contributors and the `DWD <https://www.dwd.de/>`__.
 
 Changelog
 =========
-See file ``CHANGES.rst``.
+See file `CHANGES.rst <https://github.com/panodata/dwdweather2/blob/master/CHANGES.rst>`__.

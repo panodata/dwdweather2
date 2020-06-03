@@ -16,9 +16,10 @@ class DwdCdcKnowledge(object):
 
         # The different measurements for climate data
         measurements = [
+            {"key": "KL", "name": "daily_observations", "folder": "kl"},
             {"key": "TU", "name": "air_temperature"},
             {"key": "CS", "name": "cloud_type"},
-            {"key": "N", "name": "cloudiness"},
+            {"key": "N",  "name": "cloudiness"},
             {"key": "TD", "name": "dew_point"},
             {"key": "TX", "name": "extreme_temperature"},
             {"key": "FX", "name": "extreme_wind"},
@@ -29,7 +30,7 @@ class DwdCdcKnowledge(object):
             {"key": "SD", "name": "sun"},
             {"key": "VV", "name": "visibility"},
             {"key": "FF", "name": "wind"},
-            {"key": "F", "name": "wind_synop"},
+            {"key": "F",  "name": "wind_synop"},
         ]
 
         # The different resolutions for climate data
@@ -42,17 +43,204 @@ class DwdCdcKnowledge(object):
 
             Quality level (column header: QN_X)::
 
-                 1 only formal control
+                 1 only formal control during decoding and import
                  2 controlled with individually defined criteria
-                 3 automatic control and correction
+                 3 automatic control and correction (with QUALIMET and QCSY)
                  5 historic, subjective procedures
-                 7 second control done, before correction
-                 8 quality control outside ROUTINE
-                 9 not all parameters corrected
+                 7 second control, not yet corrected
+                 8 quality control, outside ROUTINE
+                 9 quality control, not all parameters corrected
                 10 quality control finished, all corrections finished
 
             Erroneous or suspicious values are identified and set to -999.
             """
+
+            # Temporal resolution: daily
+            class daily:
+
+                # Which data set / resolution subfolder to use.
+                __folder__ = "daily"
+
+                # Which format does the timestamp of this resolution have?
+                __timestamp_format__ = "%Y%m%d"
+
+                """
+                ==================
+                Daily observations
+                ==================
+
+                Recent daily station observations (temperature, pressure, precipitation,
+                sunshine duration, etc.) for Germany, quality control not completed yet.
+
+                Documentation
+                -------------
+
+                - Recent
+
+                    - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
+                    - Temporal resolution:  daily
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/daily/kl/recent/DESCRIPTION_obsgermany_climate_daily_kl_recent_en.pdf
+
+                - Historical
+
+                    - Temporal coverage:    01.01.1781 - 31.12.2017
+                    - Temporal resolution:  daily
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/daily/kl/historical/DESCRIPTION_obsgermany_climate_daily_kl_historical_en.pdf
+
+                Fields
+                ------
+                ::
+
+                    Field               Description                     Format or unit
+                    STATIONS_ID         Station identification number   Integer
+                    MESS_DATUM          Measurement time                YYYYMMDD
+                    QN_3                quality level of next columns   Integer: 1-10 and -999, for coding see paragraph "Quality information" in PDF.
+                    FX                  daily maximum of wind gust      m/s
+                    FM                  daily mean of wind velocity     m/s
+                    QN_4                quality level of next columns   Integer: 1-10 and -999, for coding see paragraph "Quality information" in PDF.
+                    RSK                 daily precipitation height      mm
+                    RSKF                precipitation form              0, 1, 4, 6, 7, 8, 9
+                    SDK                 daily sunshine duration         h
+                    SHK_TAG             daily snow depth                cm
+                    NM                  daily mean of cloud cover       1/8
+                    VPM                 daily mean of vapor pressure    hPa
+                    PM                  daily mean of pressure          hPa
+                    TMK                 daily mean of temperature       °C
+                    UPM                 daily mean of relative humidity %
+                    TXK                 daily maximum of temperature
+                                        at 2m height                    °C
+                    TNK                 daily minimum of temperature
+                                        at 2m height                    °C
+                    TGK                 daily minimum of air temperature
+                                        at 5cm above ground             °C
+                    eor                 End of record, can be ignored
+
+                Missing values are marked as -999. All dates given are in UTC.
+
+                Form of precipitation:
+
+                    0   No precipitation (conventional or automatic measurement),
+                        relates to WMO code 10
+                    1   Only rain (before 1979)
+                    4   Unknown form of recorded precipitation
+                    6   Only rain; only liquid precipitation at automatic stations,
+                        relates to WMO code 11
+                    7   Only snow; only solid precipitation at automatic stations,
+                        relates to WMO code 12
+                    8   Rain and snow (and/or "Schneeregen"); liquid and solid precipitation
+                        at automatic stations, relates to WMO code 13
+                    9   Error or missing value or no automatic determination of precipitation form,
+                        relates to WMO code 15
+
+                """
+                daily_observations = (
+                    ("daily_quality_level_3", "int"),
+                    ("wind_gust_max", "real"),
+                    ("wind_velocity_mean", "real"),
+                    ("daily_quality_level_4", "int"),
+                    ("precipitation_height", "real"),
+                    ("precipitation_form", "int"),
+                    ("sunshine_duration", "real"),
+                    ("snow_depth", "real"),
+                    ("cloud_cover", "real"),
+                    ("vapor_pressure", "real"),
+                    ("pressure", "real"),
+                    ("temperature", "real"),
+                    ("humidity", "real"),
+                    ("temperature_max_200", "real"),
+                    ("temperature_min_200", "real"),
+                    ("temperature_min_005", "real"),
+                )
+
+                """
+                ================
+                Soil temperature
+                ================
+
+                Documentation
+                -------------
+
+                - Recent
+
+                    - Temporal coverage:    rolling: 500 days before yesterday - until yesterday
+                    - Temporal resolution:  daily
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/daily/soil_temperature/recent/DESCRIPTION_obsgermany_climate_daily_soil_temperature_recent_en.pdf
+
+                - Historical
+
+                    - Temporal coverage:    01.01.1949 - 31.12.2017
+                    - Temporal resolution:  daily
+                    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/daily/soil_temperature/historical/DESCRIPTION_obsgermany_climate_daily_soil_temperature_historical_en.pdf
+
+                Fields
+                ------
+                ::
+
+                    Field               Description                     Format or unit
+                    STATIONS_ID         Station identification number   Integer
+                    MESS_DATUM          Measurement time                YYYYMMDDHH
+                    QN_2                Quality level                   Integer: 1-10 and -999, for coding see paragraph "Quality information" in PDF.
+                    V_TE002             Soil temperature in   2 cm depth °C
+                    V_TE005             Soil temperature in   5 cm depth °C
+                    V_TE010             Soil temperature in  10 cm depth °C
+                    V_TE020             Soil temperature in  20 cm depth °C
+                    V_TE050             Soil temperature in  50 cm depth °C
+                    V_TE100             Soil temperature in 100 cm depth °C
+                    eor                 End of record, can be ignored
+
+                Missing values are marked as -999. All dates given are in UTC.
+                """
+                soil_temperature = (
+                    ("soil_temperature_quality_level", "int"),  # Quality level
+                    ("soil_temperature_002", "real"),  # Soil temperature 2cm
+                    ("soil_temperature_005", "real"),  # Soil temperature 5cm
+                    ("soil_temperature_010", "real"),  # Soil temperature 10cm
+                    ("soil_temperature_020", "real"),  # Soil temperature 20cm
+                    ("soil_temperature_050", "real"),  # Soil temperature 50cm
+                    #("soil_temperature_100", "real"),  # Soil temperature 100cm
+                )
+
+                """
+                =====
+                Solar
+                =====
+
+                Documentation
+                -------------
+
+                - Description:          Daily station observations of solar incoming (total/diffuse) and longwave downward radiation for Germany
+                - Temporal coverage:    01.01.1937 - month before last month
+                - Temporal resolution:  daily
+                - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/daily/solar/DESCRIPTION_obsgermany_climate_daily_solar_en.pdf
+
+                Fields
+                ------
+                ::
+
+                    Field               Description                     Format or unit
+                    STATIONS_ID         Station identification number   Integer
+                    MESS_DATUM          Measurement time                YYYYMMDDHH
+                    QN_592              Quality level                   Integer: 1-10 and -999, for coding see paragraph "Quality information" in PDF.
+                    ATMO_STRAHL         Hourly sum of longwave          J/cm^2
+                                        downward radiation
+                    FD_STRAHL           Hourly sum of diffuse           J/cm^2
+                                        solar radiation
+                    FG_STRAHL           Hourly sum of solar             J/cm^2
+                                        incoming radiation
+                    SD_STRAHL           Hourly sum of                   min
+                                        sunshine duration
+                    eor                 End of record, can be ignored
+
+                Missing values are marked as -999. All dates given are in UTC.
+
+                """
+                solar = (
+                    ("solar_quality_level", "int"),         # Quality information
+                    ("solar_atmosphere", "real"),           # Hourly sum of longwave downward radiation
+                    ("solar_dhi", "real"),                  # Hourly sum of Diffuse Horizontal Irradiance (DHI)
+                    ("solar_ghi", "real"),                  # Hourly sum of Global Horizontal Irradiance (GHI)
+                    ("solar_sunshine", "real"),             # Hourly sum of sunshine duration
+                )
 
             # Temporal resolution: hourly
             class hourly:
@@ -188,8 +376,8 @@ class DwdCdcKnowledge(object):
                 Missing values are marked as -999. All dates given are in UTC.
 
                 The WRTR form of precipitation is only given at certain times, in accordance with SYNOP definition.
-                Refer to daily values for more information on precipitation type. The classification of precipitation type in the
-                daily values differs from the classification for the hourly values.
+                Refer to daily values for more information on precipitation type. The classification of precipitation 
+                type in the daily values differs from the classification for the hourly values.
 
                 For the hourly values, the W_R definition (see Table 55, VUB 2 Band D, 2013) is used::
 

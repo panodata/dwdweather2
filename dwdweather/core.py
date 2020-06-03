@@ -51,7 +51,7 @@ class DwdWeather:
         # Configure context
         # =================
 
-        # Data set selector by resolution (houry, 10_minutes).
+        # Data set selector by resolution (daily, hourly, 10_minutes).
         self.resolution = resolution
 
         # Categories of measurements.
