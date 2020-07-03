@@ -30,6 +30,12 @@ Python client to access weather data from Deutscher Wetterdienst
 (`DWD <https://www.dwd.de/>`__), the federal meteorological service in
 Germany.
 
+.. note::
+
+    Please note this library will gradually be phased out.
+    You should consider using its successor library "`Wetterdienst <https://github.com/earthobservations/wetterdienst>`_".
+
+
 ************
 Installation
 ************
@@ -173,3 +179,45 @@ other contributors and the `DWD <https://www.dwd.de/>`__.
 Changelog
 =========
 See file `CHANGES.rst <https://github.com/panodata/dwdweather2/blob/master/CHANGES.rst>`__.
+
+
+**************
+Other projects
+**************
+- https://github.com/earthobservations/wetterdienst
+- https://github.com/na-boa/brightsky
+- https://github.com/stephan192/dwdwfsapi
+- https://github.com/jlewis91/dwdbulk
+- https://github.com/domschl/python-dwd-forecast
+- https://github.com/FL550/simple_dwd_weatherforecast
+
+- https://github.com/astoeckel/pydwdapi
+- https://github.com/ckaus/pydwd
+
+- https://github.com/hiveeyes/phenodata
+- https://github.com/hiveeyes/apicast
+
+- https://github.com/brry/rdwd
+
+- https://github.com/scoute-dich/Weather
+- https://github.com/buwx/meteogram
+- https://github.com/clerie/wetter
+- https://github.com/dj0001/DWD-Warnmodul-2
+- https://github.com/FWidm/dwd-hourly-crawler
+
+- https://github.com/ekeih/dwdpollen
+- https://github.com/marcschumacher/dwd_pollen
+- https://github.com/schmupu/ioBroker.pollenflug
+- https://github.com/LukeSkywalker92/MMM-DWD-WarnWeather
+- https://github.com/devduisburg/MMM-pollen
+- https://github.com/Pix---/vis_widget_dwd_pollenflug
+
+- https://github.com/codeformuenster/mosmix-api
+- https://github.com/codeformuenster/mosmix-processor
+- https://github.com/DouglasFletcher/germanwetter
+
+- https://github.com/wradlib
+- https://github.com/jkreklow/radproc
+
+- https://github.com/beltoforion/Synthetischer-Wetterbericht
+- https://beltoforion.de/de/wetterbericht/

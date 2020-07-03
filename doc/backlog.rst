@@ -22,9 +22,14 @@ Prio 2
 - [o] Even if downloading croaks, no fresh data is requested when running the acquisition again
 - [o] Documentation
 
-    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/subdaily/standard_format/qualitaetsbytes.pdf
-    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/subdaily/standard_format/code_kl.pdf
-    - ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/subdaily/standard_format/download_legende_klkxformat.pdf
+    - https://www.dwd.de/DE/leistungen/klimadatendeutschland/messnetzkarten.html
+    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/subdaily/standard_format/qualitaetsbytes.pdf
+    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/subdaily/standard_format/code_kl.pdf
+    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/subdaily/standard_format/formate_kl.html
+    - https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/subdaily/standard_format/download_legende_klkxformat.pdf
+    - https://www.dwd.de/DE/leistungen/opendata/help/stationen/mosmix_stationskatalog.cfg
+    - https://www.dwd.de/DE/leistungen/klimadatendeutschland/stationsliste.html
+    - https://www.dwd.de/EN/ourservices/met_application_mosmix/met_application_mosmix.html
 
 - [o] Import more data::
 
