@@ -1,5 +1,5 @@
 """dwdweather2: Python client to access weather data from Deutscher Wetterdienst (DWD)."""
 __appname__ = "dwdweather2"
-__version__ = "0.13.0"
+__version__ = "0.14.0"
 
 from .core import DwdWeather
