@@ -1,7 +1,13 @@
-.. image:: https://img.shields.io/badge/Python-2.7-green.svg
+.. image:: https://img.shields.io/badge/Python-3-green.svg
     :target: https://github.com/panodata/dwdweather2
 
 .. image:: https://img.shields.io/pypi/v/dwdweather2.svg
+    :target: https://pypi.org/project/dwdweather2/
+
+.. image:: https://img.shields.io/pypi/l/dwdweather2.svg
+    :target: https://pypi.org/project/dwdweather2/
+
+.. image:: https://img.shields.io/pypi/dm/dwdweather2.svg
     :target: https://pypi.org/project/dwdweather2/
 
 .. image:: https://img.shields.io/github/tag/panodata/dwdweather2.svg
