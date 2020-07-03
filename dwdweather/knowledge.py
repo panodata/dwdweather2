@@ -475,8 +475,8 @@ class DwdCdcKnowledge(object):
                 """
                 pressure = (
                     ("pressure_quality_level", "int"),  # Quality level
-                    ("pressure_normalized", "real"),  # Mean sea level pressure
-                    ("pressure_station", "real"),  # Pressure at station height
+                    ("pressure_msl", "real"),           # Mean sea level pressure
+                    ("pressure_station", "real"),       # Pressure at station height
                 )
 
                 """

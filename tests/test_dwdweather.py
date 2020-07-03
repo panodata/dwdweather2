@@ -154,7 +154,7 @@ def test_hourly_recent_more():
     assert result['soil_temperature_020'] == 16.1
     assert result['soil_temperature_050'] == 16.6
     assert result['soil_temperature_100'] == 14.8
-    assert result['pressure_normalized'] == 1025.0
+    assert result['pressure_msl'] == 1025.0
     assert result['pressure_station'] == 1018.9
     assert result['visibility_source'] == "P"
     assert result['visibility_value'] == 39870

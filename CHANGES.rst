@@ -6,9 +6,10 @@ in progress
 ===========
 
 
-2020-07-03 0.13.1
+2020-07-03 0.14.0
 =================
 - Fix CSV output. Thanks, @bijanfallah!
+- Rename "pressure_normalized" to "pressure_msl"
 
 2020-06-03 0.13.0
 =================
