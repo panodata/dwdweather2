@@ -6,6 +6,10 @@ in progress
 ===========
 
 
+2020-07-03 0.13.1
+=================
+- Fix CSV output. Thanks, @bijanfallah!
+
 2020-06-03 0.13.0
 =================
 - Use "htmllistparse" for fetching directory index.

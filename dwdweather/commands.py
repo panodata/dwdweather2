@@ -42,7 +42,7 @@ def run():
         if args.output_path is None:
             print(output)
         else:
-            f = open(args.output_path, "wb")
+            f = open(args.output_path, "w")
             f.write(output)
             f.close()
 
